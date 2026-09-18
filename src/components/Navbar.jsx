@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Heart } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import Logo from './Logo.jsx'
 
@@ -12,28 +13,31 @@ export default function Navbar() {
           <Logo />
         </Link>
 
-        <div className="hidden flex-1 items-center justify-center gap-8 text-sm font-semibold text-slate-500 md:flex">
-          <Link to="/" className="transition hover:text-bronze">Comprar un auto</Link>
-          <Link to="/agencias/demo" className="transition hover:text-bronze">Nuestras sucursales</Link>
-          <Link to="/#nosotros" className="transition hover:text-bronze">Nosotros</Link>
+        <div className="hidden flex-1 items-center justify-center gap-7 text-sm font-bold text-navy-dark/80 md:flex">
+          <Link to="/autos" className="transition hover:text-bronze">Comprar un auto</Link>
+          <span className="cursor-default select-none text-navy-dark/40">Nuestras sucursales</span>
+          <span className="cursor-default select-none text-navy-dark/40">Nosotros</span>
           {esAdmin && (
             <Link to="/admin" className="transition hover:text-bronze">Administración</Link>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/favoritos"
+            aria-label="Favoritos"
+            title="Favoritos"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-navy-dark/70 transition hover:bg-bronze/10 hover:text-bronze"
+          >
+            <Heart className="h-5 w-5" />
+          </Link>
           {usuario ? (
-            <>
-              <Link to="/favoritos" className="text-sm font-semibold text-slate-500 transition hover:text-bronze">
-                Favoritos
-              </Link>
-              <button
-                onClick={logout}
-                className="rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze"
-              >
-                Cerrar sesión
-              </button>
-            </>
+            <button
+              onClick={logout}
+              className="rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze"
+            >
+              Cerrar sesión
+            </button>
           ) : (
             <>
               <Link to="/login" className="text-sm font-semibold text-slate-500 transition hover:text-bronze">

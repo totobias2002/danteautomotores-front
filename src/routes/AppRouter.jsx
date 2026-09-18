@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import HomePage from '../pages/HomePage.jsx'
+import AutosPage from '../pages/AutosPage.jsx'
 import PublicacionDetallePage from '../pages/PublicacionDetallePage.jsx'
 import AgenciaPage from '../pages/AgenciaPage.jsx'
 import LoginPage from '../pages/LoginPage.jsx'
@@ -13,6 +14,7 @@ export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/autos" element={<AutosPage />} />
       <Route path="/publicaciones/:id" element={<PublicacionDetallePage />} />
       <Route path="/agencias/:slug" element={<AgenciaPage />} />
       <Route path="/login" element={<LoginPage />} />

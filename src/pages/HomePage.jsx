@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ArrowRight, Check, ChevronDown, Search, Sparkles } from 'lucide-react'
 import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
+import SeccionFinanciamiento from '../components/SeccionFinanciamiento.jsx'
+import LogoMarca from '../components/LogoMarca.jsx'
 import { destacadosMock } from '../mocks/homeMock.js'
 
 // TODO: sacar esto cuando el backend esté levantado y probado.
@@ -11,10 +13,9 @@ import { destacadosMock } from '../mocks/homeMock.js'
 // datos hardcodeados solo para previsualizar el diseño.
 const USE_MOCK_DATA = true
 
-const brands = ['Toyota', 'Volkswagen', 'Jeep', 'Chevrolet', 'Ford', 'Fiat']
+const brands = ['Toyota', 'Volkswagen', 'Jeep', 'Chevrolet', 'Ford', 'Fiat', 'Peugeot', 'Renault', 'BMW']
 
 export default function HomePage() {
-  const location = useLocation()
   const [publicaciones, setPublicaciones] = useState([])
   const [filtros, setFiltros] = useState({ marca: '', modelo: '', precioMax: '' })
   const [cargando, setCargando] = useState(true)
@@ -48,12 +49,6 @@ export default function HomePage() {
     buscar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    if (!location.hash) return
-    const el = document.querySelector(location.hash)
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
-  }, [location.hash])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -142,25 +137,23 @@ export default function HomePage() {
         </div>
       </section>
 
+      <SeccionFinanciamiento />
+
       {/* Marquee de marcas */}
-      <section className="overflow-hidden border-y border-slate-200 bg-white py-5">
+      <section className="overflow-hidden border-t border-slate-200 bg-white py-6">
         <div className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
           Marcas que encontrás en DanteAutomotores
         </div>
-        <div className="flex w-max animate-marquee gap-14 px-8">
-          {[...brands, ...brands].map((brand, i) => (
-            <div key={`${brand}-${i}`} className="flex items-center gap-2 text-sm font-bold text-navy/60">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy/5 text-[10px] text-bronze">
-                {brand.charAt(0)}
-              </span>
-              {brand}
-            </div>
+        <div className="flex w-max animate-marquee gap-14 px-8 hover:[animation-play-state:paused]">
+          {[...brands, ...brands, ...brands, ...brands].map((brand, i) => (
+            <LogoMarca key={`${brand}-${i}`} marca={brand} />
           ))}
         </div>
       </section>
 
       {/* Destacados */}
-      <section className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+      <section className="border-t border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
         <div className="mb-10 flex items-end justify-between">
           <div>
             <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-bronze">Selección de la semana</p>
@@ -168,6 +161,16 @@ export default function HomePage() {
               {cargando ? 'Buscando...' : 'Autos destacados'}
             </h2>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              setFiltros({ marca: '', modelo: '', precioMax: '' })
+              buscar({})
+            }}
+            className="hidden items-center gap-2 text-sm font-bold text-navy transition hover:text-bronze sm:flex"
+          >
+            Ver todos <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
 
         {!cargando && publicaciones.length === 0 && (
@@ -180,6 +183,7 @@ export default function HomePage() {
               <PublicacionCard publicacion={p} />
             </Link>
           ))}
+        </div>
         </div>
       </section>
 

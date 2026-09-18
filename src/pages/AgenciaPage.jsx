@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Car, Percent } from 'lucide-react'
 import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
+import BotonFlotanteWhatsapp from '../components/BotonFlotanteWhatsapp.jsx'
+import LogoMarca from '../components/LogoMarca.jsx'
+import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 import { agenciaMock, publicacionesMock } from '../mocks/agenciaMock.js'
 
 // TODO: sacar esto cuando el backend esté levantado y probado.
@@ -55,6 +59,8 @@ export default function AgenciaPage() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#fafaf9]">
+      <BotonFlotanteWhatsapp mensaje={`Hola, quería consultar por un auto de ${agencia.nombre}.`} />
+
       {/* Hero */}
       <section className="relative overflow-hidden bg-navy text-white">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-bronze/10 blur-3xl" />
@@ -73,6 +79,24 @@ export default function AgenciaPage() {
               {agencia.descripcion && (
                 <p className="mt-4 max-w-xl text-sm leading-7 text-slate-300">{agencia.descripcion}</p>
               )}
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a
+                  href={armarLinkWhatsapp(`Hola, quiero información sobre financiamiento en ${agencia.nombre}.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-bronze px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-bronze/20 transition hover:-translate-y-0.5 hover:bg-bronze-light"
+                >
+                  <Percent className="h-3.5 w-3.5" /> Financiamiento a medida · entrega inmediata
+                </a>
+                <a
+                  href={armarLinkWhatsapp(`Hola, quiero cotizar mi auto como parte de pago en ${agencia.nombre}.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-white/10"
+                >
+                  <Car className="h-3.5 w-3.5" /> Cotizá tu usado
+                </a>
+              </div>
             </div>
             {agencia.logo && (
               <div className="animate-fade-in-up rounded-2xl bg-white/5 p-6">
@@ -85,25 +109,21 @@ export default function AgenciaPage() {
 
       {/* Marquee de marcas */}
       {marcas.length > 0 && (
-        <section className="overflow-hidden border-y border-slate-200 bg-white py-5">
+        <section className="overflow-hidden border-t border-slate-200 bg-white py-6">
           <div className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
             Marcas disponibles en {agencia.nombre}
           </div>
-          <div className="flex w-max animate-marquee gap-14 px-8">
-            {[...marcas, ...marcas].map((marca, i) => (
-              <div key={`${marca}-${i}`} className="flex items-center gap-2 text-sm font-bold text-navy/60">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy/5 text-[10px] text-bronze">
-                  {marca.charAt(0)}
-                </span>
-                {marca}
-              </div>
+          <div className="flex w-max animate-marquee gap-14 px-8 hover:[animation-play-state:paused]">
+            {[...marcas, ...marcas, ...marcas, ...marcas].map((marca, i) => (
+              <LogoMarca key={`${marca}-${i}`} marca={marca} />
             ))}
           </div>
         </section>
       )}
 
       {/* Autos disponibles */}
-      <section className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+      <section className="border-t border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
         <div className="mb-10 flex items-end justify-between">
           <div>
             <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-bronze">Catálogo</p>
@@ -123,6 +143,7 @@ export default function AgenciaPage() {
               <PublicacionCard publicacion={p} />
             </Link>
           ))}
+        </div>
         </div>
       </section>
 
