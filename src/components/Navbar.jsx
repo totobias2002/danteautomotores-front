@@ -1,30 +1,48 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import Logo from './Logo.jsx'
 
 export default function Navbar() {
   const { usuario, esAdmin, logout } = useAuth()
 
   return (
-    <header className="bg-slate-900 text-white">
-      <nav className="max-w-6xl mx-auto flex items-center justify-between px-4 py-4">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-xl font-extrabold tracking-tight">
-            Dante<span className="text-orange-500">Automotores</span>
-          </span>
+    <header className="bg-cream sticky top-0 z-40 border-b border-black/5">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10" aria-label="Navegación principal">
+        <Link to="/">
+          <Logo />
         </Link>
-        <div className="flex items-center gap-5 text-sm">
+
+        <div className="hidden flex-1 items-center justify-center gap-8 text-sm font-semibold text-slate-500 md:flex">
+          <Link to="/" className="transition hover:text-bronze">Comprar un auto</Link>
+          <Link to="/agencias/demo" className="transition hover:text-bronze">Nuestras sucursales</Link>
+          <Link to="/#nosotros" className="transition hover:text-bronze">Nosotros</Link>
           {esAdmin && (
-            <Link to="/admin" className="hover:text-orange-400">Administración</Link>
+            <Link to="/admin" className="transition hover:text-bronze">Administración</Link>
           )}
+        </div>
+
+        <div className="flex items-center gap-3">
           {usuario ? (
             <>
-              <Link to="/favoritos" className="hover:text-orange-400">Favoritos</Link>
-              <button onClick={logout} className="hover:text-orange-400">Cerrar sesión</button>
+              <Link to="/favoritos" className="text-sm font-semibold text-slate-500 transition hover:text-bronze">
+                Favoritos
+              </Link>
+              <button
+                onClick={logout}
+                className="rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze"
+              >
+                Cerrar sesión
+              </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="hover:text-orange-400">Ingresar</Link>
-              <Link to="/registro" className="bg-orange-500 hover:bg-orange-600 text-white rounded px-3 py-1.5">
+              <Link to="/login" className="text-sm font-semibold text-slate-500 transition hover:text-bronze">
+                Ingresar
+              </Link>
+              <Link
+                to="/registro"
+                className="rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze"
+              >
                 Crear cuenta
               </Link>
             </>
