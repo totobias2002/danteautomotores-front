@@ -50,4 +50,41 @@
   .animate-marquee {
     animation: marquee 60s linear infinite;
   }
+
+  /* Slider de doble handle para el filtro de precio: dos <input type="range">
+     superpuestos, con el thumb como único punto "clickeable" de cada uno. */
+  .precio-range {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .precio-range::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    background: transparent;
+  }
+  .precio-range::-moz-range-track {
+    background: transparent;
+  }
+  .precio-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: auto;
+    height: 16px;
+    width: 16px;
+    border-radius: 9999px;
+    background: white;
+    border: 2px solid var(--color-bronze);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    margin-top: 0;
+  }
+  .precio-range::-moz-range-thumb {
+    pointer-events: auto;
+    height: 16px;
+    width: 16px;
+    border-radius: 9999px;
+    background: white;
+    border: 2px solid var(--color-bronze);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
 }

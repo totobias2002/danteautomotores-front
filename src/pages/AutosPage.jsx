@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import FiltroAcordeon from '../components/FiltroAcordeon.jsx'
-import { catalogoMock, ESTADO_LABELS } from '../mocks/catalogoMock.js'
+import {
+  catalogoMock,
+  ESTADO_LABELS,
+  PRECIO_MIN,
+  PRECIO_MAX,
+  HISTOGRAMA_PRECIOS,
+  MAX_CANTIDAD_BIN_PRECIO,
+  BANDAS_PRECIO,
+} from '../mocks/catalogoMock.js'
 import { LOGOS } from '../components/LogoMarca.jsx'
 
 // TODO: sacar esto cuando el backend esté levantado y probado, y traer el
@@ -17,6 +25,8 @@ const ORDENES = [
 
 const inputClase =
   'w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-navy outline-none focus:border-bronze'
+
+const formatoNumero = (valor) => new Intl.NumberFormat('es-AR').format(valor)
 
 function ChipsFiltro({ opciones, activos, onToggle }) {
   return (
@@ -69,12 +79,16 @@ function ChipMarcaLogo({ marca, activa, onToggle }) {
 }
 
 export default function AutosPage() {
-  const [busqueda, setBusqueda] = useState('')
-  const [precioMin, setPrecioMin] = useState('')
-  const [precioMax, setPrecioMax] = useState('')
+  const [searchParams] = useSearchParams()
+  const [busqueda, setBusqueda] = useState(() => searchParams.get('busqueda') || '')
+  const [precioMin, setPrecioMin] = useState(() => searchParams.get('precioMin') || '')
+  const [precioMax, setPrecioMax] = useState(() => searchParams.get('precioMax') || '')
   const [soloOfertas, setSoloOfertas] = useState(false)
   const [ubicacionesActivas, setUbicacionesActivas] = useState([])
-  const [marcasActivas, setMarcasActivas] = useState([])
+  const [marcasActivas, setMarcasActivas] = useState(() => {
+    const marca = searchParams.get('marca')
+    return marca ? [marca] : []
+  })
   const [modelosActivos, setModelosActivos] = useState([])
   const [anioMin, setAnioMin] = useState('')
   const [anioMax, setAnioMax] = useState('')
@@ -84,6 +98,7 @@ export default function AutosPage() {
   const [coloresActivos, setColoresActivos] = useState([])
   const [disponibilidadActiva, setDisponibilidadActiva] = useState([])
   const [orden, setOrden] = useState('relevancia')
+  const [mostrarRangosPrecio, setMostrarRangosPrecio] = useState(false)
 
   const toggleEnLista = (setter) => (valor) =>
     setter((prev) => (prev.includes(valor) ? prev.filter((v) => v !== valor) : [...prev, valor]))
@@ -203,6 +218,59 @@ export default function AutosPage() {
     coloresActivos.length > 0 ||
     disponibilidadActiva.length > 0
 
+  const filtrosActivos = useMemo(() => {
+    const chips = []
+    if (busqueda) chips.push({ id: 'busqueda', label: `"${busqueda}"`, onQuitar: () => setBusqueda('') })
+    if (precioMin) chips.push({ id: 'precioMin', label: `Precio desde $${formatoNumero(precioMin)}`, onQuitar: () => setPrecioMin('') })
+    if (precioMax) chips.push({ id: 'precioMax', label: `Precio hasta $${formatoNumero(precioMax)}`, onQuitar: () => setPrecioMax('') })
+    if (soloOfertas) chips.push({ id: 'ofertas', label: 'Solo ofertas', onQuitar: () => setSoloOfertas(false) })
+    ubicacionesActivas.forEach((u) =>
+      chips.push({ id: `ubicacion-${u}`, label: `Ubicación: ${u}`, onQuitar: () => toggleUbicacion(u) })
+    )
+    marcasActivas.forEach((m) => chips.push({ id: `marca-${m}`, label: `Marca: ${m}`, onQuitar: () => toggleMarca(m) }))
+    modelosActivos.forEach((m) => chips.push({ id: `modelo-${m}`, label: `Modelo: ${m}`, onQuitar: () => toggleModelo(m) }))
+    if (anioMin) chips.push({ id: 'anioMin', label: `Año desde ${anioMin}`, onQuitar: () => setAnioMin('') })
+    if (anioMax) chips.push({ id: 'anioMax', label: `Año hasta ${anioMax}`, onQuitar: () => setAnioMax('') })
+    if (kmMax) chips.push({ id: 'kmMax', label: `Hasta ${formatoNumero(kmMax)} km`, onQuitar: () => setKmMax('') })
+    tiposActivos.forEach((t) => chips.push({ id: `tipo-${t}`, label: `Tipo: ${t}`, onQuitar: () => toggleTipo(t) }))
+    mecanicasActivas.forEach((m) =>
+      chips.push({ id: `mecanica-${m}`, label: `Mecánica: ${m}`, onQuitar: () => toggleMecanica(m) })
+    )
+    coloresActivos.forEach((c) => chips.push({ id: `color-${c}`, label: `Color: ${c}`, onQuitar: () => toggleColor(c) }))
+    disponibilidadActiva.forEach((e) =>
+      chips.push({ id: `estado-${e}`, label: `Estado: ${ESTADO_LABELS[e] || e}`, onQuitar: () => toggleDisponibilidad(e) })
+    )
+    return chips
+  }, [
+    busqueda,
+    precioMin,
+    precioMax,
+    soloOfertas,
+    ubicacionesActivas,
+    marcasActivas,
+    modelosActivos,
+    anioMin,
+    anioMax,
+    kmMax,
+    tiposActivos,
+    mecanicasActivas,
+    coloresActivos,
+    disponibilidadActiva,
+  ])
+
+  const categoriasActivas = [
+    Boolean(precioMin) || Boolean(precioMax),
+    soloOfertas,
+    ubicacionesActivas.length > 0,
+    marcasActivas.length > 0,
+    modelosActivos.length > 0,
+    Boolean(anioMin) || Boolean(anioMax) || Boolean(kmMax),
+    tiposActivos.length > 0,
+    mecanicasActivas.length > 0,
+    coloresActivos.length > 0,
+    disponibilidadActiva.length > 0,
+  ].filter(Boolean).length
+
   const limpiarFiltros = () => {
     setBusqueda('')
     setPrecioMin('')
@@ -236,12 +304,39 @@ export default function AutosPage() {
           />
         </div>
 
+        {filtrosActivos.length > 0 && (
+          <div className="mb-8 flex flex-wrap items-center gap-2 rounded-2xl border border-bronze/20 bg-bronze/5 px-4 py-3">
+            <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-bronze">
+              <SlidersHorizontal className="h-3.5 w-3.5" /> Filtrando por:
+            </span>
+            {filtrosActivos.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={f.onQuitar}
+                className="flex items-center gap-1.5 rounded-full border border-bronze/30 bg-white px-3 py-1.5 text-xs font-semibold text-navy-dark shadow-sm transition hover:border-bronze hover:bg-bronze/10"
+              >
+                {f.label}
+                <X className="h-3 w-3 text-bronze" />
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={limpiarFiltros}
+              className="ml-1 text-xs font-bold text-bronze hover:underline"
+            >
+              Limpiar todo
+            </button>
+          </div>
+        )}
+
         <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
-          <aside>
+          <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pb-4">
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
               <div className="mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-bold text-navy-dark">
-                  <SlidersHorizontal className="h-4 w-4 text-bronze" /> Filtros
+                  <SlidersHorizontal className="h-4 w-4 text-bronze" />
+                  Filtros{categoriasActivas > 0 ? ` (${categoriasActivas})` : ''}
                 </div>
                 {hayFiltrosActivos && (
                   <button type="button" onClick={limpiarFiltros} className="text-xs font-bold text-bronze hover:underline">
@@ -250,26 +345,109 @@ export default function AutosPage() {
                 )}
               </div>
 
-              <FiltroAcordeon titulo="Precio">
+              <FiltroAcordeon titulo="Precio" contador={(precioMin ? 1 : 0) + (precioMax ? 1 : 0)}>
                 <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    value={precioMin}
-                    onChange={(e) => setPrecioMin(e.target.value)}
-                    placeholder="Desde"
-                    className={inputClase}
+                  <label className="flex min-w-0 items-center gap-1 rounded-xl border border-slate-200 px-2 py-2 transition focus-within:border-bronze">
+                    <span className="shrink-0 text-xs font-bold text-slate-400">$</span>
+                    <input
+                      type="number"
+                      value={precioMin}
+                      onChange={(e) => setPrecioMin(e.target.value)}
+                      placeholder={formatoNumero(PRECIO_MIN)}
+                      className="w-full min-w-0 text-xs font-semibold text-navy outline-none"
+                    />
+                  </label>
+                  <label className="flex min-w-0 items-center gap-1 rounded-xl border border-slate-200 px-2 py-2 transition focus-within:border-bronze">
+                    <span className="shrink-0 text-xs font-bold text-slate-400">$</span>
+                    <input
+                      type="number"
+                      value={precioMax}
+                      onChange={(e) => setPrecioMax(e.target.value)}
+                      placeholder={formatoNumero(PRECIO_MAX)}
+                      className="w-full min-w-0 text-xs font-semibold text-navy outline-none"
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-4 flex h-14 items-end gap-0.5">
+                  {HISTOGRAMA_PRECIOS.map((bin, i) => {
+                    const centro = (bin.desde + bin.hasta) / 2
+                    const sliderMin = precioMin ? Number(precioMin) : PRECIO_MIN
+                    const sliderMax = precioMax ? Number(precioMax) : PRECIO_MAX
+                    const enRango = centro >= sliderMin && centro <= sliderMax
+                    const altura = Math.max((bin.cantidad / MAX_CANTIDAD_BIN_PRECIO) * 100, 6)
+                    return (
+                      <div
+                        key={i}
+                        title={`${bin.cantidad} auto(s)`}
+                        className={`flex-1 rounded-sm transition-colors ${enRango ? 'bg-bronze' : 'bg-slate-200'}`}
+                        style={{ height: `${altura}%` }}
+                      />
+                    )
+                  })}
+                </div>
+
+                <div className="relative mt-3 h-4">
+                  <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200" />
+                  <div
+                    className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-bronze"
+                    style={{
+                      left: `${((precioMin ? Number(precioMin) : PRECIO_MIN - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100}%`,
+                      right: `${100 - ((precioMax ? Number(precioMax) : PRECIO_MAX - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100}%`,
+                    }}
                   />
                   <input
-                    type="number"
-                    value={precioMax}
-                    onChange={(e) => setPrecioMax(e.target.value)}
-                    placeholder="Hasta"
-                    className={inputClase}
+                    type="range"
+                    min={PRECIO_MIN}
+                    max={PRECIO_MAX}
+                    value={precioMin ? Number(precioMin) : PRECIO_MIN}
+                    onChange={(e) => {
+                      const valor = Math.min(Number(e.target.value), precioMax ? Number(precioMax) : PRECIO_MAX)
+                      setPrecioMin(String(valor))
+                    }}
+                    className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
+                  />
+                  <input
+                    type="range"
+                    min={PRECIO_MIN}
+                    max={PRECIO_MAX}
+                    value={precioMax ? Number(precioMax) : PRECIO_MAX}
+                    onChange={(e) => {
+                      const valor = Math.max(Number(e.target.value), precioMin ? Number(precioMin) : PRECIO_MIN)
+                      setPrecioMax(String(valor))
+                    }}
+                    className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
                   />
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setMostrarRangosPrecio((v) => !v)}
+                  className="mt-3 text-xs font-bold text-bronze hover:underline"
+                >
+                  Ver rangos de precios
+                </button>
+
+                {mostrarRangosPrecio && (
+                  <div className="mt-2 space-y-1 rounded-xl border border-slate-100 bg-slate-50 p-2">
+                    {BANDAS_PRECIO.map((banda, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setPrecioMin(String(banda.desde))
+                          setPrecioMax(String(banda.hasta))
+                        }}
+                        className="block w-full rounded-lg px-2 py-1.5 text-left text-xs font-semibold text-navy-dark transition hover:bg-bronze/10"
+                      >
+                        $ {formatoNumero(banda.desde)} - $ {formatoNumero(banda.hasta)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Ofertas">
+              <FiltroAcordeon titulo="Ofertas" contador={soloOfertas ? 1 : 0}>
                 <label className="flex items-center gap-2 text-sm font-semibold text-navy">
                   <input
                     type="checkbox"
@@ -281,11 +459,11 @@ export default function AutosPage() {
                 </label>
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Ubicación">
+              <FiltroAcordeon titulo="Ubicación" contador={ubicacionesActivas.length}>
                 <ChipsFiltro opciones={ubicacionesDisponibles} activos={ubicacionesActivas} onToggle={toggleUbicacion} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Marca">
+              <FiltroAcordeon titulo="Marca" contador={marcasActivas.length}>
                 <div className="flex flex-wrap gap-2">
                   {marcasDisponibles.map(({ value }) => (
                     <ChipMarcaLogo key={value} marca={value} activa={marcasActivas.includes(value)} onToggle={toggleMarca} />
@@ -293,11 +471,11 @@ export default function AutosPage() {
                 </div>
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Modelo">
+              <FiltroAcordeon titulo="Modelo" contador={modelosActivos.length}>
                 <ChipsFiltro opciones={modelosDisponibles} activos={modelosActivos} onToggle={toggleModelo} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Año y Kilometraje">
+              <FiltroAcordeon titulo="Año y Kilometraje" contador={(anioMin ? 1 : 0) + (anioMax ? 1 : 0) + (kmMax ? 1 : 0)}>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -325,19 +503,19 @@ export default function AutosPage() {
                 </div>
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Tipo de Auto">
+              <FiltroAcordeon titulo="Tipo de Auto" contador={tiposActivos.length}>
                 <ChipsFiltro opciones={tiposDisponibles} activos={tiposActivos} onToggle={toggleTipo} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Mecánica">
+              <FiltroAcordeon titulo="Mecánica" contador={mecanicasActivas.length}>
                 <ChipsFiltro opciones={mecanicasDisponibles} activos={mecanicasActivas} onToggle={toggleMecanica} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Color exterior">
+              <FiltroAcordeon titulo="Color exterior" contador={coloresActivos.length}>
                 <ChipsFiltro opciones={coloresDisponibles} activos={coloresActivos} onToggle={toggleColor} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Disponibilidad del auto">
+              <FiltroAcordeon titulo="Disponibilidad del auto" contador={disponibilidadActiva.length}>
                 <ChipsFiltro opciones={disponibilidadOpciones} activos={disponibilidadActiva} onToggle={toggleDisponibilidad} />
               </FiltroAcordeon>
             </div>

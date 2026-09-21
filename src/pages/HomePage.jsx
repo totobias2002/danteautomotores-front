@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowRight, Check, ChevronDown, Search, Sparkles } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight, Check, Search, Sparkles } from 'lucide-react'
 import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
 import SeccionFinanciamiento from '../components/SeccionFinanciamiento.jsx'
-import LogoMarca from '../components/LogoMarca.jsx'
+import LogoMarca, { LOGOS } from '../components/LogoMarca.jsx'
 import { destacadosMock } from '../mocks/homeMock.js'
+import { BANDAS_PRECIO, catalogoMock } from '../mocks/catalogoMock.js'
 
 // TODO: sacar esto cuando el backend esté levantado y probado.
 // Mientras USE_MOCK_DATA sea true, el Home ignora la API real y muestra
@@ -15,19 +16,41 @@ const USE_MOCK_DATA = true
 
 const brands = ['Toyota', 'Volkswagen', 'Jeep', 'Chevrolet', 'Ford', 'Fiat', 'Peugeot', 'Renault', 'BMW']
 
+// Marcas y bandas de precio que se muestran como accesos rápidos en el hero,
+// debajo del buscador, para no tener que escribir nada.
+const MARCAS_ACCESO_RAPIDO = ['Toyota', 'Volkswagen', 'Jeep', 'Ford', 'Fiat', 'Peugeot']
+
+const formatoNumero = (valor) => new Intl.NumberFormat('es-AR').format(valor)
+
+const etiquetaBanda = (banda, i) => {
+  if (i === 0) return `Hasta $${formatoNumero(banda.hasta)}`
+  if (i === BANDAS_PRECIO.length - 1) return `Más de $${formatoNumero(banda.desde)}`
+  return `$${formatoNumero(banda.desde)} - $${formatoNumero(banda.hasta)}`
+}
+
+// Para el autocompletado del buscador del hero: todas las marcas del catálogo
+// más cada combinación "marca modelo", para que sugiera tanto si escribís una
+// marca como si escribís (parte de) un modelo puntual.
+const SUGERENCIAS_BASE = [...new Set([...brands, ...catalogoMock.map((a) => `${a.marca} ${a.modelo}`)])]
+
 export default function HomePage() {
+  const navigate = useNavigate()
   const [publicaciones, setPublicaciones] = useState([])
-  const [filtros, setFiltros] = useState({ marca: '', modelo: '', precioMax: '' })
+  const [filtros, setFiltros] = useState({ marca: '' })
   const [cargando, setCargando] = useState(true)
+  const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false)
+
+  const sugerencias = useMemo(() => {
+    const q = filtros.marca.trim().toLowerCase()
+    if (!q) return []
+    return SUGERENCIAS_BASE.filter((s) => s.toLowerCase().includes(q)).slice(0, 6)
+  }, [filtros.marca])
 
   const buscarMock = (params = {}) => {
     let resultado = destacadosMock
     if (params.marca) {
       const q = params.marca.toLowerCase()
       resultado = resultado.filter((p) => `${p.marca} ${p.modelo}`.toLowerCase().includes(q))
-    }
-    if (params.precioMax) {
-      resultado = resultado.filter((p) => p.precio <= Number(params.precioMax))
     }
     setPublicaciones(resultado)
   }
@@ -52,10 +75,14 @@ export default function HomePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const params = {}
-    if (filtros.marca) params.marca = filtros.marca
-    if (filtros.precioMax) params.precioMax = filtros.precioMax
-    buscar(params)
+    setSugerenciasAbiertas(false)
+    const texto = filtros.marca.trim()
+    navigate(texto ? `/autos?busqueda=${encodeURIComponent(texto)}` : '/autos')
+  }
+
+  const elegirSugerencia = (sugerencia) => {
+    setFiltros({ marca: sugerencia })
+    setSugerenciasAbiertas(false)
   }
 
   return (
@@ -76,9 +103,9 @@ export default function HomePage() {
 
             <form
               onSubmit={handleSubmit}
-              className="mt-9 flex max-w-xl flex-wrap items-center gap-3 rounded-2xl border border-black/5 bg-white p-2 shadow-xl shadow-navy/10"
+              className="relative mt-9 flex max-w-xl flex-wrap items-center gap-3 rounded-2xl border border-black/5 bg-white p-2 shadow-xl shadow-navy/10"
             >
-              <div className="flex min-w-[130px] flex-1 items-center gap-3 rounded-xl px-3 py-2">
+              <div className="relative flex min-w-[220px] flex-1 items-center gap-3 rounded-xl px-3 py-2">
                 <Search className="h-4 w-4 text-bronze" />
                 <div className="w-full">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">¿Qué buscás?</label>
@@ -86,23 +113,29 @@ export default function HomePage() {
                     placeholder="Marca o modelo"
                     value={filtros.marca}
                     onChange={(e) => setFiltros({ ...filtros, marca: e.target.value })}
+                    onFocus={() => setSugerenciasAbiertas(true)}
+                    onBlur={() => setTimeout(() => setSugerenciasAbiertas(false), 150)}
+                    autoComplete="off"
                     className="block w-full text-sm font-semibold text-navy outline-none placeholder:text-slate-400"
                   />
                 </div>
-              </div>
-              <div className="hidden h-9 w-px bg-slate-200 sm:block" />
-              <div className="flex min-w-[110px] flex-1 items-center gap-3 rounded-xl px-3 py-2">
-                <div className="w-full">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Presupuesto</label>
-                  <input
-                    type="number"
-                    placeholder="Sin límite"
-                    value={filtros.precioMax}
-                    onChange={(e) => setFiltros({ ...filtros, precioMax: e.target.value })}
-                    className="block w-full text-sm font-semibold text-navy outline-none placeholder:text-slate-400"
-                  />
-                </div>
-                <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-slate-400" />
+                {sugerenciasAbiertas && sugerencias.length > 0 && (
+                  <ul className="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl shadow-navy/10">
+                    {sugerencias.map((sugerencia) => (
+                      <li key={sugerencia}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => elegirSugerencia(sugerencia)}
+                          className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold text-navy-dark transition hover:bg-bronze/5 hover:text-bronze"
+                        >
+                          <Search className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                          {sugerencia}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <button
                 type="submit"
@@ -119,6 +152,50 @@ export default function HomePage() {
               <span className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-bronze" /> Sin sorpresas
               </span>
+            </div>
+
+            <div className="mt-8 max-w-xl">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por marca</p>
+              <div className="flex flex-wrap gap-2">
+                {MARCAS_ACCESO_RAPIDO.map((marca) => (
+                  <Link
+                    key={marca}
+                    to={`/autos?marca=${encodeURIComponent(marca)}`}
+                    title={`Ver autos ${marca}`}
+                    className="flex h-11 w-16 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white p-2 transition hover:-translate-y-0.5 hover:border-bronze/40 hover:shadow-md"
+                  >
+                    {LOGOS[marca] ? (
+                      <img
+                        src={LOGOS[marca]}
+                        alt={marca}
+                        loading="lazy"
+                        className="max-h-6 max-w-[85%] object-contain grayscale-[25%] opacity-80 transition hover:grayscale-0 hover:opacity-100"
+                      />
+                    ) : (
+                      <span className="text-[10px] font-bold text-bronze">{marca}</span>
+                    )}
+                  </Link>
+                ))}
+                <Link
+                  to="/autos"
+                  className="flex h-11 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-300 px-3 text-xs font-bold text-slate-500 transition hover:border-bronze hover:text-bronze"
+                >
+                  Ver todas
+                </Link>
+              </div>
+
+              <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por presupuesto</p>
+              <div className="flex flex-wrap gap-2">
+                {BANDAS_PRECIO.map((banda, i) => (
+                  <Link
+                    key={i}
+                    to={`/autos?precioMin=${banda.desde}&precioMax=${banda.hasta}`}
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-navy-dark transition hover:-translate-y-0.5 hover:border-bronze hover:text-bronze hover:shadow-md"
+                  >
+                    {etiquetaBanda(banda, i)}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -164,7 +241,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => {
-              setFiltros({ marca: '', modelo: '', precioMax: '' })
+              setFiltros({ marca: '' })
               buscar({})
             }}
             className="hidden items-center gap-2 text-sm font-bold text-navy transition hover:text-bronze sm:flex"

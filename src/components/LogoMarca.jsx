@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 // Logos oficiales tomados de Wikimedia Commons (dominio público / uso de marca para
 // identificar qué marcas se venden, práctica habitual en sitios de concesionarias).
 export const LOGOS = {
@@ -14,13 +16,15 @@ export const LOGOS = {
 
 // Todos los logos entran en la misma caja (mismo alto/ancho), así ninguno se ve
 // más grande o más chico que el resto sin importar la relación de aspecto original.
+// Al tocar un logo, lleva al catálogo /autos con esa marca ya filtrada.
 export default function LogoMarca({ marca }) {
   const src = LOGOS[marca]
 
   return (
-    <div
+    <Link
+      to={`/autos?marca=${encodeURIComponent(marca)}`}
       className="flex h-20 w-32 shrink-0 items-center justify-center rounded-2xl transition-all duration-200 ease-out hover:scale-110 hover:bg-bronze/5 hover:shadow-md hover:shadow-navy/5"
-      title={marca}
+      title={`Ver autos ${marca}`}
     >
       {src ? (
         <img
@@ -34,6 +38,6 @@ export default function LogoMarca({ marca }) {
           {marca.charAt(0)}
         </span>
       )}
-    </div>
+    </Link>
   )
 }
