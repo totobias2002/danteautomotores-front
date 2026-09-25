@@ -203,7 +203,17 @@ export default function HomePage() {
             <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full border border-bronze/20" />
             <div className="absolute -bottom-5 -left-5 h-20 w-20 rounded-full bg-bronze/10" />
             <div className="relative overflow-hidden rounded-[2rem] rounded-br-[5rem] bg-navy shadow-2xl shadow-navy/20">
-              <img src="/images/hero-car.png" alt="Sedán moderno color cobre" className="h-[310px] w-full object-cover md:h-[430px]" />
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster="/images/hero-car-poster.jpg"
+                aria-label="Video de un auto premium en un garage con iluminación moderna"
+                className="h-[310px] w-full object-cover md:h-[430px]"
+              >
+                <source src="/videos/hero-car.mp4" type="video/mp4" />
+              </video>
               <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-7 text-white">
                 <p className="text-xs uppercase tracking-[0.18em] text-bronze-light">Curaduría DanteAutomotores</p>

@@ -350,9 +350,10 @@ export default function AutosPage() {
                   <label className="flex min-w-0 items-center gap-1 rounded-xl border border-slate-200 px-2 py-2 transition focus-within:border-bronze">
                     <span className="shrink-0 text-xs font-bold text-slate-400">$</span>
                     <input
-                      type="number"
-                      value={precioMin}
-                      onChange={(e) => setPrecioMin(e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      value={precioMin ? formatoNumero(precioMin) : ''}
+                      onChange={(e) => setPrecioMin(e.target.value.replace(/\D/g, ''))}
                       placeholder={formatoNumero(PRECIO_MIN)}
                       className="w-full min-w-0 text-xs font-semibold text-navy outline-none"
                     />
@@ -360,65 +361,81 @@ export default function AutosPage() {
                   <label className="flex min-w-0 items-center gap-1 rounded-xl border border-slate-200 px-2 py-2 transition focus-within:border-bronze">
                     <span className="shrink-0 text-xs font-bold text-slate-400">$</span>
                     <input
-                      type="number"
-                      value={precioMax}
-                      onChange={(e) => setPrecioMax(e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      value={precioMax ? formatoNumero(precioMax) : ''}
+                      onChange={(e) => setPrecioMax(e.target.value.replace(/\D/g, ''))}
                       placeholder={formatoNumero(PRECIO_MAX)}
                       className="w-full min-w-0 text-xs font-semibold text-navy outline-none"
                     />
                   </label>
                 </div>
 
-                <div className="mt-4 flex h-14 items-end gap-0.5">
-                  {HISTOGRAMA_PRECIOS.map((bin, i) => {
-                    const centro = (bin.desde + bin.hasta) / 2
-                    const sliderMin = precioMin ? Number(precioMin) : PRECIO_MIN
-                    const sliderMax = precioMax ? Number(precioMax) : PRECIO_MAX
-                    const enRango = centro >= sliderMin && centro <= sliderMax
-                    const altura = Math.max((bin.cantidad / MAX_CANTIDAD_BIN_PRECIO) * 100, 6)
-                    return (
-                      <div
-                        key={i}
-                        title={`${bin.cantidad} auto(s)`}
-                        className={`flex-1 rounded-sm transition-colors ${enRango ? 'bg-bronze' : 'bg-slate-200'}`}
-                        style={{ height: `${altura}%` }}
-                      />
-                    )
-                  })}
-                </div>
+                {(() => {
+                  // Los valores que escribe la persona en los inputs pueden ser
+                  // cualquier número (incluso fuera del rango de precios del
+                  // catálogo, como $0). Para el slider y el histograma siempre
+                  // los "recortamos" entre PRECIO_MIN y PRECIO_MAX, para que el
+                  // resaltado se vea siempre coherente con las dos puntas.
+                  const clamp = (valor) => Math.min(PRECIO_MAX, Math.max(PRECIO_MIN, valor))
+                  const sliderMin = clamp(precioMin ? Number(precioMin) : PRECIO_MIN)
+                  const sliderMax = clamp(precioMax ? Number(precioMax) : PRECIO_MAX)
+                  const porcentajeMin = ((sliderMin - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100
+                  const porcentajeMax = ((sliderMax - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100
 
-                <div className="relative mt-3 h-4">
-                  <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200" />
-                  <div
-                    className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-bronze"
-                    style={{
-                      left: `${((precioMin ? Number(precioMin) : PRECIO_MIN - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100}%`,
-                      right: `${100 - ((precioMax ? Number(precioMax) : PRECIO_MAX - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100}%`,
-                    }}
-                  />
-                  <input
-                    type="range"
-                    min={PRECIO_MIN}
-                    max={PRECIO_MAX}
-                    value={precioMin ? Number(precioMin) : PRECIO_MIN}
-                    onChange={(e) => {
-                      const valor = Math.min(Number(e.target.value), precioMax ? Number(precioMax) : PRECIO_MAX)
-                      setPrecioMin(String(valor))
-                    }}
-                    className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
-                  />
-                  <input
-                    type="range"
-                    min={PRECIO_MIN}
-                    max={PRECIO_MAX}
-                    value={precioMax ? Number(precioMax) : PRECIO_MAX}
-                    onChange={(e) => {
-                      const valor = Math.max(Number(e.target.value), precioMin ? Number(precioMin) : PRECIO_MIN)
-                      setPrecioMax(String(valor))
-                    }}
-                    className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
-                  />
-                </div>
+                  return (
+                    <>
+                      <div className="mt-4 flex h-14 items-end gap-0.5">
+                        {HISTOGRAMA_PRECIOS.map((bin, i) => {
+                          const centro = (bin.desde + bin.hasta) / 2
+                          const enRango = centro >= sliderMin && centro <= sliderMax
+                          const altura = Math.max((bin.cantidad / MAX_CANTIDAD_BIN_PRECIO) * 100, 6)
+                          return (
+                            <div
+                              key={i}
+                              title={`${bin.cantidad} auto(s)`}
+                              className={`flex-1 rounded-sm transition-colors ${enRango ? 'bg-bronze' : 'bg-slate-200'}`}
+                              style={{ height: `${altura}%` }}
+                            />
+                          )
+                        })}
+                      </div>
+
+                      <div className="relative mt-3 h-4">
+                        <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200" />
+                        <div
+                          className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-bronze"
+                          style={{
+                            left: `${porcentajeMin}%`,
+                            right: `${100 - porcentajeMax}%`,
+                          }}
+                        />
+                        <input
+                          type="range"
+                          min={PRECIO_MIN}
+                          max={PRECIO_MAX}
+                          value={sliderMin}
+                          onChange={(e) => {
+                            const valor = Math.min(Number(e.target.value), sliderMax)
+                            setPrecioMin(String(valor))
+                          }}
+                          className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
+                        />
+                        <input
+                          type="range"
+                          min={PRECIO_MIN}
+                          max={PRECIO_MAX}
+                          value={sliderMax}
+                          onChange={(e) => {
+                            const valor = Math.max(Number(e.target.value), sliderMin)
+                            setPrecioMax(String(valor))
+                          }}
+                          className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
+                        />
+                      </div>
+                    </>
+                  )
+                })()}
 
                 <button
                   type="button"
