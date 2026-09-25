@@ -43,6 +43,14 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/publicaciones/:id/editar"
+        element={
+          <ProtectedRoute soloAdmin>
+            <AdminPublicacionFormPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }

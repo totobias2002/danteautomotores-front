@@ -10,6 +10,7 @@ import {
   Heart,
   MapPin,
   Palette,
+  Pencil,
   Repeat,
   Settings2,
   Share2,
@@ -56,7 +57,7 @@ function Dato({ icono: Icono, etiqueta, valor }) {
 export default function PublicacionDetallePage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { usuario } = useAuth()
+  const { usuario, esAdmin } = useAuth()
 
   const [publicacion, setPublicacion] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -171,13 +172,24 @@ export default function PublicacionDetallePage() {
   return (
     <main className="bg-[#fafaf9]">
       <div className="mx-auto max-w-7xl px-6 py-8 lg:px-10">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-bronze"
-        >
-          <ArrowLeft className="h-4 w-4" /> Volver a resultados
-        </button>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-bronze"
+          >
+            <ArrowLeft className="h-4 w-4" /> Volver a resultados
+          </button>
+
+          {esAdmin && (
+            <Link
+              to={`/admin/publicaciones/${publicacion.id}/editar`}
+              className="flex items-center gap-1.5 rounded-xl border border-bronze px-3.5 py-2 text-xs font-bold text-bronze transition hover:bg-bronze hover:text-white"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Editar publicación
+            </Link>
+          )}
+        </div>
 
         <div className="grid gap-10 lg:grid-cols-[1.35fr_1fr]">
           {/* Galería y contenido principal */}
