@@ -6,7 +6,9 @@ import AgenciaPage from '../pages/AgenciaPage.jsx'
 import LoginPage from '../pages/LoginPage.jsx'
 import RegistroPage from '../pages/RegistroPage.jsx'
 import FavoritosPage from '../pages/FavoritosPage.jsx'
+import VenderPage from '../pages/VenderPage.jsx'
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx'
+import AdminSolicitudesVentaPage from '../pages/admin/AdminSolicitudesVentaPage.jsx'
 import AdminPublicacionFormPage from '../pages/admin/AdminPublicacionFormPage.jsx'
 import ProtectedRoute from '../components/ProtectedRoute.jsx'
 
@@ -19,6 +21,7 @@ export default function AppRouter() {
       <Route path="/agencias/:slug" element={<AgenciaPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegistroPage />} />
+      <Route path="/vender" element={<VenderPage />} />
       <Route
         path="/favoritos"
         element={
@@ -48,6 +51,14 @@ export default function AppRouter() {
         element={
           <ProtectedRoute soloAdmin>
             <AdminPublicacionFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/solicitudes-venta"
+        element={
+          <ProtectedRoute soloAdmin>
+            <AdminSolicitudesVentaPage />
           </ProtectedRoute>
         }
       />

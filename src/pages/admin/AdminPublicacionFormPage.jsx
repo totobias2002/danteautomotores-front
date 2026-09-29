@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ImagePlus, Loader2, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
+import { KM_MAXIMO, MARCAS, MODELOS_SUGERIDOS } from '../../constants/vehiculo.js'
 
 const TRANSMISIONES = [
   { value: 'MANUAL', label: 'Manual' },
@@ -23,22 +24,8 @@ const CONDICIONES = [
   { value: 'REGULAR', label: 'Regular' },
 ]
 
-const MARCAS = [
-  'Toyota', 'Ford', 'Chevrolet', 'Volkswagen', 'Renault', 'Peugeot', 'Fiat', 'Honda',
-  'Nissan', 'Hyundai', 'Kia', 'Citroën', 'Jeep', 'Mercedes-Benz', 'BMW', 'Audi',
-  'Chery', 'BAIC', 'JAC', 'DS', 'RAM', 'Suzuki', 'Mitsubishi', 'Subaru',
-]
-
 const COLORES = [
   'Blanco', 'Negro', 'Gris', 'Plata', 'Azul', 'Rojo', 'Verde', 'Beige', 'Marrón', 'Bordó', 'Amarillo', 'Naranja',
-]
-
-const MODELOS_SUGERIDOS = [
-  'Corolla', 'Hilux', 'Etios', 'Yaris', 'SW4', 'Ranger', 'Focus', 'EcoSport', 'Ka',
-  'Onix', 'Cruze', 'Tracker', 'S10', 'Gol', 'Polo', 'Amarok', 'T-Cross', 'Virtus',
-  'Sandero', 'Logan', 'Duster', 'Kangoo', '208', '2008', '3008', 'Partner',
-  'Cronos', 'Argo', 'Pulse', 'Toro', 'Civic', 'CR-V', 'HR-V', 'Versa', 'Kicks',
-  'Frontier', 'Creta', 'Tucson', 'Sportage', 'Rio', 'C4 Cactus', 'Compass', 'Renegade',
 ]
 
 const MAX_FOTOS = 10
@@ -47,6 +34,13 @@ const formatearPrecio = (valor) => {
   const soloDigitos = String(valor ?? '').replace(/\D/g, '')
   if (!soloDigitos) return ''
   return Number(soloDigitos).toLocaleString('es-AR')
+}
+
+const acotarKm = (valor) => {
+  const soloDigitos = String(valor ?? '').replace(/\D/g, '')
+  if (!soloDigitos) return ''
+  const numero = Math.min(Number(soloDigitos), KM_MAXIMO)
+  return String(numero)
 }
 
 const FORM_INICIAL = {
@@ -331,7 +325,23 @@ export default function AdminPublicacionFormPage() {
               </div>
 
               <Input label="Año" type="number" required {...campo('anio')} />
-              <Input label="Kilometraje" type="number" {...campo('kilometraje')} />
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-slate-500">Kilometraje</span>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={formatearPrecio(form.kilometraje)}
+                    onChange={(e) => setForm({ ...form, kilometraje: acotarKm(e.target.value) })}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
+                  />
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                    km
+                  </span>
+                </div>
+                <span className="mt-1 text-[11px] text-slate-400">Hasta {KM_MAXIMO.toLocaleString('es-AR')} km</span>
+              </label>
               <Select label="Transmisión" {...campo('transmision')}>
                 {TRANSMISIONES.map((t) => (
                   <option key={t.value} value={t.value}>

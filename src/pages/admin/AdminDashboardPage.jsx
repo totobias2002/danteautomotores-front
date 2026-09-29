@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowRight, Building2, Pencil, Plus, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
 
 const AGENCIA_INICIAL = {
@@ -105,6 +105,17 @@ export default function AdminDashboardPage() {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Panel</p>
         <h1 className="mt-2 font-heading text-3xl text-navy-dark">Administración</h1>
         <p className="mt-2 text-sm text-slate-500">Gestioná las agencias y los autos publicados en el marketplace.</p>
+
+        <Link
+          to="/admin/solicitudes-venta"
+          className="mt-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-bronze"
+        >
+          <span>
+            <span className="block text-sm font-bold text-navy-dark">Solicitudes de venta</span>
+            <span className="block text-xs text-slate-500">Autos que la gente cargó en "Vender tu auto" para que los contactemos.</span>
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-bronze" />
+        </Link>
 
         <section className="mt-10">
           <div className="mb-4 flex items-center justify-between">
