@@ -1,50 +1,99 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Car, Percent } from 'lucide-react'
 import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
+import Paginador from '../components/Paginador.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
 import BotonFlotanteWhatsapp from '../components/BotonFlotanteWhatsapp.jsx'
 import LogoMarca from '../components/LogoMarca.jsx'
 import { armarLinkWhatsapp } from '../utils/whatsapp.js'
-import { agenciaMock, publicacionesMock } from '../mocks/agenciaMock.js'
+import { aSearchParams, leerFiltros, paramsParaApi } from '../utils/catalogoParams.js'
+import { mensajeDeError } from '../utils/errores.js'
 
-// TODO: sacar esto cuando el backend esté levantado y probado.
-// Mientras USE_MOCK_DATA sea true, la página ignora la API real y muestra
-// datos hardcodeados solo para previsualizar el diseño.
-const USE_MOCK_DATA = true
+const LISTADO_VACIO = { contenido: [], totalElementos: 0, totalPaginas: 0 }
 
 export default function AgenciaPage() {
   const { slug } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const pagina = useMemo(() => leerFiltros(searchParams).pagina, [searchParams])
+
   const [agencia, setAgencia] = useState(null)
-  const [publicaciones, setPublicaciones] = useState([])
+  const [facetas, setFacetas] = useState(null)
+  const [listado, setListado] = useState(LISTADO_VACIO)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+  const [errorListado, setErrorListado] = useState('')
 
+  // La agencia y sus facetas dependen solo del slug: al cambiar de página no se vuelven a pedir.
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      setCargando(true)
-      setAgencia(agenciaMock)
-      setPublicaciones(publicacionesMock)
-      setCargando(false)
-      return
-    }
-
+    const controller = new AbortController()
+    setAgencia(null)
+    setFacetas(null)
+    setListado(LISTADO_VACIO)
+    setError('')
+    setErrorListado('')
     setCargando(true)
-    api.get(`/agencias/${slug}`)
+
+    api.get(`/agencias/${slug}`, { signal: controller.signal })
       .then((res) => {
         setAgencia(res.data)
-        return api.get('/publicaciones', { params: { agenciaId: res.data.id } })
+        // Las marcas del carrusel son un adorno: si las facetas fallan no se muestra el carrusel y listo.
+        api.get('/publicaciones/facetas', { params: { agenciaId: res.data.id }, signal: controller.signal })
+          .then((r) => setFacetas(r.data))
+          .catch(() => {})
       })
-      .then((res) => setPublicaciones(res?.data ?? []))
-      .catch(() => setError('No se encontró la agencia'))
-      .finally(() => setCargando(false))
+      .catch((err) => {
+        if (controller.signal.aborted) return
+        setError(mensajeDeError(err, 'No se encontró la agencia'))
+        setCargando(false)
+      })
+
+    return () => controller.abort()
   }, [slug])
 
-  const marcas = useMemo(
-    () => [...new Set(publicaciones.map((p) => p.marca).filter(Boolean))],
-    [publicaciones]
-  )
+  // El listado depende de la agencia y de la página. Cada cambio cancela el pedido anterior para que
+  // una respuesta lenta no pise a la nueva.
+  const agenciaId = agencia?.id
+  useEffect(() => {
+    if (agenciaId === undefined) return
+    const controller = new AbortController()
+    setCargando(true)
+    setErrorListado('')
+
+    api.get('/publicaciones', {
+      params: paramsParaApi({ ...leerFiltros(new URLSearchParams()), pagina }, { agenciaId }),
+      signal: controller.signal,
+    })
+      .then((res) => {
+        setListado(res.data)
+        // Una página que ya no existe (link viejo, autos vendidos): se reemplaza por la última sin sumar historial.
+        if (res.data.totalPaginas > 0 && pagina > res.data.totalPaginas) {
+          setSearchParams(aSearchParams({ ...leerFiltros(new URLSearchParams()), pagina: res.data.totalPaginas }), {
+            replace: true,
+          })
+        }
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return
+        setListado(LISTADO_VACIO)
+        setErrorListado(mensajeDeError(err, 'No pudimos cargar los autos de esta agencia. Probá de nuevo en un rato.'))
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCargando(false)
+      })
+
+    return () => controller.abort()
+    // setSearchParams cambia de identidad con cada cambio de la URL; no va en las dependencias para no repedir.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agenciaId, pagina])
+
+  const marcas = useMemo(() => (facetas?.marcas ?? []).map((m) => m.valor).filter(Boolean), [facetas])
+
+  const irAPagina = (nueva) => {
+    setSearchParams(aSearchParams({ ...leerFiltros(new URLSearchParams()), pagina: nueva }))
+    window.scrollTo({ top: 0 })
+  }
 
   if (error) {
     return (
@@ -128,22 +177,26 @@ export default function AgenciaPage() {
           <div>
             <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-bronze">Catálogo</p>
             <h2 className="text-4xl tracking-[-0.035em] text-navy-dark md:text-5xl">
-              {cargando ? 'Buscando...' : `Autos disponibles (${publicaciones.length})`}
+              {cargando && listado.contenido.length === 0 ? 'Buscando...' : `Autos (${listado.totalElementos})`}
             </h2>
           </div>
         </div>
 
-        {!cargando && publicaciones.length === 0 && (
+        {errorListado && <p className="mb-6 text-red-600">{errorListado}</p>}
+
+        {!cargando && !errorListado && listado.contenido.length === 0 && (
           <p className="text-slate-500">Esta agencia todavía no tiene autos publicados.</p>
         )}
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {publicaciones.map((p) => (
+        <div className={`grid gap-5 transition-opacity sm:grid-cols-2 lg:grid-cols-3 ${cargando ? 'opacity-60' : ''}`}>
+          {listado.contenido.map((p) => (
             <Link key={p.id} to={`/publicaciones/${p.id}`}>
               <PublicacionCard publicacion={p} />
             </Link>
           ))}
         </div>
+
+        <Paginador pagina={pagina} totalPaginas={listado.totalPaginas} onCambiar={irAPagina} />
         </div>
       </section>
 
