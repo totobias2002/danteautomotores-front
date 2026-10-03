@@ -63,6 +63,8 @@ export default function PublicacionDetallePage() {
   const [similares, setSimilares] = useState([])
   const [fotoActiva, setFotoActiva] = useState(0)
   const [favoritoOk, setFavoritoOk] = useState(false)
+  const [guardandoFavorito, setGuardandoFavorito] = useState(false)
+  const [errorFavorito, setErrorFavorito] = useState('')
   const [enlaceCopiado, setEnlaceCopiado] = useState(false)
   const [avisoCuenta, setAvisoCuenta] = useState(false)
   const [consulta, setConsulta] = useState({ nombreComprador: '', emailComprador: '', telefonoComprador: '', mensaje: '' })
@@ -80,6 +82,8 @@ export default function PublicacionDetallePage() {
     setSimilares([])
     setFotoActiva(0)
     setFavoritoOk(false)
+    setGuardandoFavorito(false)
+    setErrorFavorito('')
     setEnviado(false)
     setErrorConsulta('')
 
@@ -119,6 +123,24 @@ export default function PublicacionDetallePage() {
     }
   }, [id, vendido])
 
+  // Con sesión, el corazón arranca con el estado real. Si el pedido falla queda vacío: guardar de nuevo daría el
+  // aviso de "ya está en tus favoritos" y no se marca nada que el backend no haya confirmado.
+  useEffect(() => {
+    if (!usuario) return undefined
+    let vigente = true
+    api
+      .get('/favoritos')
+      .then((res) => {
+        if (vigente && Array.isArray(res.data)) {
+          setFavoritoOk(res.data.some((f) => String(f?.publicacion?.id) === String(id)))
+        }
+      })
+      .catch(() => {})
+    return () => {
+      vigente = false
+    }
+  }, [id, usuario])
+
   const fotos = publicacion?.fotos ?? []
   const simbolo = simboloMoneda(publicacion?.moneda)
   // La oferta la decide el servidor (oferta=true); el front nunca la deduce comparando precios.
@@ -146,15 +168,32 @@ export default function PublicacionDetallePage() {
     setTimeout(() => setAvisoCuenta(false), 4000)
   }
 
-  const alternarFavorito = () => {
+  // El corazón solo cambia cuando el backend confirma: guardar con POST, quitar con DELETE. Ante cualquier error
+  // queda como estaba y se muestra el motivo. Un 401 no muestra nada: el interceptor de api.js ya cierra la sesión y
+  // lleva a /login.
+  const alternarFavorito = async () => {
     if (!usuario) {
       navigate('/login')
       return
     }
-    api
-      .post(`/favoritos/${id}`)
-      .then(() => setFavoritoOk(true))
-      .catch(() => setFavoritoOk(true)) // probablemente ya estaba en favoritos
+    if (guardandoFavorito) return
+    setGuardandoFavorito(true)
+    setErrorFavorito('')
+    try {
+      if (favoritoOk) {
+        await api.delete(`/favoritos/${id}`)
+        setFavoritoOk(false)
+      } else {
+        await api.post(`/favoritos/${id}`)
+        setFavoritoOk(true)
+      }
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        setErrorFavorito(mensajeDeError(err, 'No se pudo actualizar tus favoritos. Intentá de nuevo.'))
+      }
+    } finally {
+      setGuardandoFavorito(false)
+    }
   }
 
   const compartir = async () => {
@@ -435,8 +474,10 @@ export default function PublicacionDetallePage() {
                 <button
                   type="button"
                   onClick={alternarFavorito}
-                  aria-label="Guardar en favoritos"
-                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                  aria-label={favoritoOk ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+                  aria-pressed={favoritoOk}
+                  disabled={guardandoFavorito}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition disabled:opacity-60 ${
                     favoritoOk ? 'border-bronze bg-bronze text-white' : 'border-slate-200 text-navy hover:border-bronze hover:text-bronze'
                   }`}
                 >
@@ -523,6 +564,11 @@ export default function PublicacionDetallePage() {
               </p>
             )}
             {enlaceCopiado && <p className="mt-3 text-center text-xs font-semibold text-bronze">Enlace copiado ✓</p>}
+            {errorFavorito && (
+              <p role="alert" className="mt-3 text-center text-xs font-semibold text-red-600">
+                {errorFavorito}
+              </p>
+            )}
 
             <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-slate-400">
               <ShieldCheck className="h-4 w-4 text-bronze" /> Auto verificado por DanteAutomotores

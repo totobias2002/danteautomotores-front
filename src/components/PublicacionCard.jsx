@@ -56,17 +56,6 @@ export default function PublicacionCard({ publicacion }) {
             </>
           )}
         </span>
-
-        <button
-          aria-label="Guardar auto"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-navy transition hover:bg-bronze hover:text-white"
-        >
-          ♡
-        </button>
       </div>
 
       <div className="p-5">
