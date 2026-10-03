@@ -4,6 +4,7 @@ import { ArrowLeft, Check, ChevronLeft, ChevronRight, ImagePlus, Loader2, Star, 
 import api from '../../services/api.js'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
 import { mensajeDeError } from '../../utils/errores.js'
+import { TIPO_CARROCERIA, opcionesDe } from '../../utils/etiquetas.js'
 
 const TRANSMISIONES = [
   { value: 'MANUAL', label: 'Manual' },
@@ -67,8 +68,10 @@ const FORM_INICIAL = {
   modelo: '',
   anio: '',
   precio: '',
+  precioAnterior: '',
   moneda: 'ARS',
   kilometraje: '',
+  tipoCarroceria: '',
   transmision: 'MANUAL',
   combustible: 'NAFTA',
   color: '',
@@ -84,8 +87,11 @@ const publicacionAForm = (p) => ({
   // El campo de precio solo maneja enteros (formatearPrecio descarta todo lo que no sea dígito): un "12500.5"
   // se mostraría como 125.005. Los precios son números redondos, así que se redondea al cargar.
   precio: p.precio != null ? String(Math.round(Number(p.precio))) : '',
+  // Mismo redondeo que el precio. Si no se carga acá, guardar desde el form borraría el valor (el PUT reemplaza todo).
+  precioAnterior: p.precioAnterior != null ? String(Math.round(Number(p.precioAnterior))) : '',
   moneda: p.moneda ?? 'ARS',
   kilometraje: p.kilometraje != null ? String(p.kilometraje) : '',
+  tipoCarroceria: p.tipoCarroceria ?? '',
   // Los tres son opcionales en el backend: un null se conserva como '' ("Sin especificar") y no se reemplaza por
   // un valor inventado que el próximo guardado escribiría en la base.
   transmision: p.transmision ?? '',
@@ -138,6 +144,9 @@ export default function AdminPublicacionFormPage() {
     onChange: (e) => setForm({ ...form, [nombre]: e.target.value }),
   })
 
+  // Aviso no bloqueante: la API acepta un precio anterior que no supera al precio, pero entonces no hay oferta.
+  const sinOferta = form.precioAnterior !== '' && Number(form.precioAnterior) <= Number(form.precio || 0)
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -154,7 +163,9 @@ export default function AdminPublicacionFormPage() {
       agenciaId: Number(form.agenciaId),
       anio: Number(form.anio),
       precio: Number(form.precio),
+      precioAnterior: form.precioAnterior ? Number(form.precioAnterior) : null,
       kilometraje: form.kilometraje ? Number(form.kilometraje) : null,
+      tipoCarroceria: form.tipoCarroceria || null,
       transmision: form.transmision || null,
       combustible: form.combustible || null,
       condicion: form.condicion || null,
@@ -424,6 +435,14 @@ export default function AdminPublicacionFormPage() {
 
               <Input label="Año" type="number" required {...campo('anio')} />
               <Input label="Kilometraje" type="number" {...campo('kilometraje')} />
+              <Select label="Tipo de carrocería" {...campo('tipoCarroceria')}>
+                <option value="">Sin especificar</option>
+                {opcionesDe(TIPO_CARROCERIA).map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </Select>
               <Select label="Transmisión" {...campo('transmision')}>
                 <option value="">Sin especificar</option>
                 {TRANSMISIONES.map((t) => (
@@ -501,6 +520,23 @@ export default function AdminPublicacionFormPage() {
                 />
               </label>
             </div>
+            <label className="mt-4 flex flex-col gap-1.5">
+              <span className="text-xs font-bold text-slate-500">Precio anterior (opcional)</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={formatearPrecio(form.precioAnterior)}
+                onChange={(e) => setForm({ ...form, precioAnterior: e.target.value.replace(/D/g, '') })}
+                className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
+              />
+              <span className="text-xs text-slate-400">
+                Si es mayor al precio, el auto aparece como oferta con el precio anterior tachado.
+              </span>
+              {sinOferta && (
+                <span className="text-xs font-semibold text-amber-600">Con este valor el auto no se muestra como oferta.</span>
+              )}
+            </label>
           </Seccion>
 
           <Seccion titulo="Descripción">
