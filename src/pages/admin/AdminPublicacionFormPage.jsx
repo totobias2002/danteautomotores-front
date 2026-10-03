@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, ImagePlus, Loader2, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
+import ConfirmDialog from '../../components/ConfirmDialog.jsx'
 import { mensajeDeError } from '../../utils/errores.js'
 
 const TRANSMISIONES = [
@@ -102,6 +103,7 @@ export default function AdminPublicacionFormPage() {
   const [subiendoFoto, setSubiendoFoto] = useState(false)
   const [reordenando, setReordenando] = useState(false)
   const [guardado, setGuardado] = useState(false)
+  const [fotoAEliminar, setFotoAEliminar] = useState(null)
   const [otraMarca, setOtraMarca] = useState(false)
   const [otroColor, setOtroColor] = useState(false)
   const navigate = useNavigate()
@@ -241,10 +243,43 @@ export default function AdminPublicacionFormPage() {
     guardarOrden([fotoId, ...ids.filter((fid) => fid !== fotoId)])
   }
 
-  const eliminarFoto = async (fotoId) => {
-    await api.delete(`/publicaciones/${publicacion.id}/fotos/${fotoId}`)
-    setPublicacion({ ...publicacion, fotos: publicacion.fotos.filter((f) => f.id !== fotoId) })
+  const pedirEliminarFoto = (foto, indice) => {
+    setFotoAEliminar({ foto, indice, eliminando: false, error: '' })
   }
+
+  // El backend ya resecuenció el orden al borrar; acá solo se saca la foto y el resto conserva su orden relativo.
+  const confirmarEliminarFoto = async () => {
+    const { foto } = fotoAEliminar
+    setFotoAEliminar((actual) => ({ ...actual, eliminando: true, error: '' }))
+    try {
+      await api.delete(`/publicaciones/${publicacion.id}/fotos/${foto.id}`)
+      setPublicacion((actual) => ({ ...actual, fotos: actual.fotos.filter((f) => f.id !== foto.id) }))
+      setFotoAEliminar(null)
+    } catch (err) {
+      setFotoAEliminar((actual) => ({
+        ...actual,
+        eliminando: false,
+        error: mensajeDeError(err, 'No se pudo eliminar la foto.'),
+      }))
+    }
+  }
+
+  // Un solo diálogo para las dos pantallas donde aparece FotosGrid.
+  const dialogoEliminarFoto = (
+    <ConfirmDialog
+      abierto={Boolean(fotoAEliminar)}
+      titulo="Eliminar foto"
+      cargando={fotoAEliminar?.eliminando}
+      error={fotoAEliminar?.error}
+      onConfirmar={confirmarEliminarFoto}
+      onCancelar={() => setFotoAEliminar(null)}
+    >
+      <p>La foto se borra del auto y de la nube de imágenes.</p>
+      {fotoAEliminar?.indice === 0 && (publicacion?.fotos?.length ?? 0) > 1 && (
+        <p className="mt-2">Es la portada: la siguiente foto pasa a ser la portada.</p>
+      )}
+    </ConfirmDialog>
+  )
 
   if (cargandoInicial) {
     return (
@@ -274,7 +309,7 @@ export default function AdminPublicacionFormPage() {
               fotos={publicacion.fotos}
               subiendoFoto={subiendoFoto}
               onSubir={subirFotos}
-              onEliminar={eliminarFoto}
+              onEliminar={pedirEliminarFoto}
               onMover={moverFoto}
               onHacerPortada={hacerPortada}
               reordenando={reordenando}
@@ -282,6 +317,7 @@ export default function AdminPublicacionFormPage() {
             />
             {error && <p className="mt-4 whitespace-pre-line text-sm font-semibold text-red-600">{error}</p>}
           </div>
+          {dialogoEliminarFoto}
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -490,7 +526,7 @@ export default function AdminPublicacionFormPage() {
               fotos={publicacion.fotos}
               subiendoFoto={subiendoFoto}
               onSubir={subirFotos}
-              onEliminar={eliminarFoto}
+              onEliminar={pedirEliminarFoto}
               onMover={moverFoto}
               onHacerPortada={hacerPortada}
               reordenando={reordenando}
@@ -498,6 +534,7 @@ export default function AdminPublicacionFormPage() {
             />
           </Seccion>
         )}
+        {dialogoEliminarFoto}
       </div>
     </main>
   )
@@ -561,7 +598,7 @@ function FotosGrid({ fotos, subiendoFoto, onSubir, onEliminar, onMover, onHacerP
               </div>
               <button
                 type="button"
-                onClick={() => onEliminar(foto.id)}
+                onClick={() => onEliminar(foto, indice)}
                 disabled={reordenando}
                 aria-label="Eliminar foto"
                 className={botonFoto}

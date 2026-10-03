@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Building2, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
+import ConfirmDialog from '../../components/ConfirmDialog.jsx'
 import { mensajeDeError } from '../../utils/errores.js'
 
 const AGENCIA_INICIAL = {
@@ -44,6 +45,7 @@ export default function AdminDashboardPage() {
   const [filtroEstado, setFiltroEstado] = useState('TODOS')
   const [busqueda, setBusqueda] = useState('')
   const [errorAccion, setErrorAccion] = useState('')
+  const [aEliminar, setAEliminar] = useState(null)
 
   const publicacionesFiltradas = useMemo(() => {
     const texto = normalizar(busqueda.trim())
@@ -153,9 +155,44 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const eliminarPublicacion = async (id) => {
-    await api.delete(`/publicaciones/${id}`)
-    cargar()
+  // Borrar un auto se lleva sus consultas y favoritos (decisión: cascada + aviso). Antes de abrir el
+  // diálogo se pide el conteo, y el botón de confirmar queda deshabilitado hasta tenerlo.
+  const pedirEliminacion = (p) => {
+    setErrorAccion('')
+    setAEliminar({ publicacion: p, impacto: null, cargandoImpacto: true, eliminando: false, error: '' })
+    api.get(`/admin/publicaciones/${p.id}/impacto-eliminacion`)
+      .then((res) =>
+        setAEliminar((actual) =>
+          actual?.publicacion.id === p.id ? { ...actual, impacto: res.data, cargandoImpacto: false } : actual
+        )
+      )
+      .catch((err) =>
+        setAEliminar((actual) =>
+          actual?.publicacion.id === p.id
+            ? {
+                ...actual,
+                cargandoImpacto: false,
+                error: mensajeDeError(err, 'No se pudo calcular qué se borra junto con el auto.'),
+              }
+            : actual
+        )
+      )
+  }
+
+  const confirmarEliminacion = async () => {
+    const { publicacion } = aEliminar
+    setAEliminar((actual) => ({ ...actual, eliminando: true, error: '' }))
+    try {
+      await api.delete(`/publicaciones/${publicacion.id}`)
+      setPublicaciones((lista) => lista.filter((p) => p.id !== publicacion.id))
+      setAEliminar(null)
+    } catch (err) {
+      setAEliminar((actual) => ({
+        ...actual,
+        eliminando: false,
+        error: mensajeDeError(err, 'No se pudo eliminar la publicación.'),
+      }))
+    }
   }
 
   const campoAgencia = (nombre) => ({
@@ -418,7 +455,7 @@ export default function AdminDashboardPage() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => eliminarPublicacion(p.id)}
+                      onClick={() => pedirEliminacion(p)}
                       aria-label="Eliminar publicación"
                       className="text-slate-400 transition hover:text-red-600"
                     >
@@ -431,8 +468,40 @@ export default function AdminDashboardPage() {
           )}
         </section>
       </div>
+
+      <ConfirmDialog
+        abierto={Boolean(aEliminar)}
+        titulo="Eliminar publicación"
+        deshabilitado={!aEliminar?.impacto}
+        cargando={aEliminar?.eliminando}
+        error={aEliminar?.error}
+        onConfirmar={confirmarEliminacion}
+        onCancelar={() => setAEliminar(null)}
+      >
+        {aEliminar && (
+          <>
+            <p>
+              Vas a eliminar {aEliminar.publicacion.marca} {aEliminar.publicacion.modelo} {aEliminar.publicacion.anio}.
+            </p>
+            {aEliminar.cargandoImpacto && <p className="mt-2">Calculando qué se borra junto con el auto…</p>}
+            {aEliminar.impacto && <ResumenImpacto impacto={aEliminar.impacto} />}
+            <p className="mt-2 font-semibold text-navy-dark">Esta acción no se puede deshacer.</p>
+          </>
+        )}
+      </ConfirmDialog>
     </main>
   )
+}
+
+const plural = (n, singular, pluralTexto) => `${n} ${n === 1 ? singular : pluralTexto}`
+
+function ResumenImpacto({ impacto }) {
+  const { cantidadConsultas, cantidadFavoritos } = impacto
+  const partes = []
+  if (cantidadConsultas > 0) partes.push(`${plural(cantidadConsultas, 'consulta', 'consultas')} de compradores`)
+  if (cantidadFavoritos > 0) partes.push(plural(cantidadFavoritos, 'favorito', 'favoritos'))
+  if (partes.length === 0) return null
+  return <p className="mt-2">También se van a borrar {partes.join(' y ')}.</p>
 }
 
 function CampoAgencia({ label, ...props }) {
