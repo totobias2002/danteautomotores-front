@@ -425,7 +425,8 @@ export default function AdminDashboardPage() {
                   className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <MiniaturaPublicacion publicacion={p} />
+                    {/* La key por URL de portada reinicia el estado de error si cambia la portada. */}
+                    <MiniaturaPublicacion key={fotoDePortada(p.fotos)?.url ?? 'sin-fotos'} publicacion={p} />
                     <span className="min-w-0 text-sm font-semibold text-navy-dark">
                       {p.marca} {p.modelo} · {p.anio} — {p.moneda} {Number(p.precio).toLocaleString('es-AR')}{' '}
                       <span className="font-normal text-slate-400">({p.agenciaNombre})</span>
@@ -532,11 +533,19 @@ function PlaceholderSinFotos() {
 
 function MiniaturaPublicacion({ publicacion }) {
   const portada = fotoDePortada(publicacion.fotos)
+  const [intento, setIntento] = useState(0)
   if (!portada) return <PlaceholderSinFotos />
+
+  // Si la cuenta de Cloudinary tiene "strict transformations" activado o la derivada falla, el admin
+  // igual ve la foto original; si la original tampoco existe (404), placeholder en vez de imagen rota.
+  // Para URLs que no son de Cloudinary ambas coinciden y queda una sola candidata.
+  const candidatas = [...new Set([urlMiniatura(portada.url), portada.url])]
+  if (intento >= candidatas.length) return <PlaceholderSinFotos />
 
   return (
     <img
-      src={urlMiniatura(portada.url)}
+      src={candidatas[intento]}
+      onError={() => setIntento((actual) => actual + 1)}
       alt={`Foto de portada de ${publicacion.marca} ${publicacion.modelo} ${publicacion.anio}`}
       loading="lazy"
       decoding="async"
