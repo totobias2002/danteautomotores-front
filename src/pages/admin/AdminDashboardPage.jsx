@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react'
+import { Building2, Car, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
+import { urlMiniatura } from '../../utils/cloudinary.js'
 import { mensajeDeError } from '../../utils/errores.js'
 
 const AGENCIA_INICIAL = {
@@ -30,6 +31,13 @@ const FILTROS_ESTADO = [
 // Para buscar sin distinguir mayúsculas ni acentos.
 const normalizar = (texto) =>
   String(texto ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+// La portada es la foto de orden 0 (decisión 01-06); si por algún motivo ninguna lo tiene,
+// la primera del array, que el backend ya entrega ordenado por orden.
+const fotoDePortada = (fotos) => {
+  if (!Array.isArray(fotos) || fotos.length === 0) return null
+  return fotos.find((f) => f.orden === 0) ?? fotos[0]
+}
 
 export default function AdminDashboardPage() {
   const [agencias, setAgencias] = useState([])
@@ -416,16 +424,19 @@ export default function AdminDashboardPage() {
                   key={p.id}
                   className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <span className="text-sm font-semibold text-navy-dark">
-                    {p.marca} {p.modelo} · {p.anio} — {p.moneda} {Number(p.precio).toLocaleString('es-AR')}{' '}
-                    <span className="font-normal text-slate-400">({p.agenciaNombre})</span>
-                    {p.destacado && (
-                      <span className="ml-2 rounded-full bg-bronze/10 px-2 py-0.5 text-[11px] font-bold text-bronze">
-                        Destacado
-                      </span>
-                    )}
-                  </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <MiniaturaPublicacion publicacion={p} />
+                    <span className="min-w-0 text-sm font-semibold text-navy-dark">
+                      {p.marca} {p.modelo} · {p.anio} — {p.moneda} {Number(p.precio).toLocaleString('es-AR')}{' '}
+                      <span className="font-normal text-slate-400">({p.agenciaNombre})</span>
+                      {p.destacado && (
+                        <span className="ml-2 rounded-full bg-bronze/10 px-2 py-0.5 text-[11px] font-bold text-bronze">
+                          Destacado
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
                     <button
                       type="button"
                       onClick={() => cambiarDestacado(p)}
@@ -504,6 +515,36 @@ function ResumenImpacto({ impacto }) {
   if (cantidadFavoritos > 0) partes.push(plural(cantidadFavoritos, 'favorito', 'favoritos'))
   if (partes.length === 0) return null
   return <p className="mt-2">También se van a borrar {partes.join(' y ')}.</p>
+}
+
+function PlaceholderSinFotos() {
+  return (
+    <div
+      role="img"
+      aria-label="Sin fotos"
+      title="Sin fotos"
+      className="flex h-15 w-20 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-300"
+    >
+      <Car className="h-6 w-6" aria-hidden="true" />
+    </div>
+  )
+}
+
+function MiniaturaPublicacion({ publicacion }) {
+  const portada = fotoDePortada(publicacion.fotos)
+  if (!portada) return <PlaceholderSinFotos />
+
+  return (
+    <img
+      src={urlMiniatura(portada.url)}
+      alt={`Foto de portada de ${publicacion.marca} ${publicacion.modelo} ${publicacion.anio}`}
+      loading="lazy"
+      decoding="async"
+      width={80}
+      height={60}
+      className="h-15 w-20 shrink-0 rounded-lg border border-slate-200 bg-slate-100 object-cover"
+    />
+  )
 }
 
 function CampoAgencia({ label, ...props }) {
