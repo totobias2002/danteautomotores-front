@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Building2, Pencil, Plus, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
+import { mensajeDeError } from '../../utils/errores.js'
 
 const AGENCIA_INICIAL = {
   nombre: '',
@@ -26,13 +27,16 @@ export default function AdminDashboardPage() {
   const [agenciaEditando, setAgenciaEditando] = useState(null)
   const [error, setError] = useState('')
   const [errorEdicion, setErrorEdicion] = useState('')
+  const [errorListado, setErrorListado] = useState('')
 
   const cargar = () => {
     api.get('/agencias').then((res) => setAgencias(res.data)).catch(() => {})
-    api
-      .get('/publicaciones', { params: { estado: 'DISPONIBLE' } })
-      .then((res) => setPublicaciones(res.data))
-      .catch(() => {})
+    api.get('/admin/publicaciones')
+      .then((res) => {
+        setPublicaciones(res.data)
+        setErrorListado('')
+      })
+      .catch((err) => setErrorListado(mensajeDeError(err, 'No se pudo cargar el listado de autos.')))
   }
 
   useEffect(() => {
@@ -245,6 +249,8 @@ export default function AdminDashboardPage() {
               <Plus className="h-3.5 w-3.5" /> Nueva publicación
             </Link>
           </div>
+
+          {errorListado && <p className="mb-3 text-sm font-semibold text-red-600">{errorListado}</p>}
 
           {publicaciones.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
