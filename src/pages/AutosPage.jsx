@@ -1,34 +1,78 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
+import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import FiltroAcordeon from '../components/FiltroAcordeon.jsx'
-import {
-  catalogoMock,
-  ESTADO_LABELS,
-  PRECIO_MIN,
-  PRECIO_MAX,
-  HISTOGRAMA_PRECIOS,
-  MAX_CANTIDAD_BIN_PRECIO,
-  BANDAS_PRECIO,
-} from '../mocks/catalogoMock.js'
+import Paginador from '../components/Paginador.jsx'
 import { LOGOS } from '../components/LogoMarca.jsx'
+import {
+  FILTROS_LISTA,
+  FILTROS_ESCALAR,
+  aSearchParams,
+  alternarEnLista,
+  bandasDePrecio,
+  conFiltro,
+  leerFiltros,
+  paramsParaApi,
+} from '../utils/catalogoParams.js'
+import { ESTADO, TIPO_CARROCERIA, TRANSMISION, ZONA } from '../utils/etiquetas.js'
+import { mensajeDeError } from '../utils/errores.js'
 
-// TODO: sacar esto cuando el backend esté levantado y probado, y traer el
-// catálogo real paginado desde /publicaciones.
 const ORDENES = [
   { value: 'relevancia', label: 'Relevancia' },
   { value: 'precio_asc', label: 'Menor precio' },
   { value: 'precio_desc', label: 'Mayor precio' },
   { value: 'anio_desc', label: 'Año: más nuevo' },
+  { value: 'km_asc', label: 'Menos km' },
 ]
+
+// Lo que se escribe (búsqueda, rangos) espera este tiempo antes de pasar a la URL y pedir al backend,
+// para no hacer un pedido por tecla.
+const DEBOUNCE_MS = 350
 
 const inputClase =
   'w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-navy outline-none focus:border-bronze'
 
 const formatoNumero = (valor) => new Intl.NumberFormat('es-AR').format(valor)
 
+const opcionesDeFacetas = (lista, etiquetar = (valor) => valor) =>
+  (lista ?? []).map(({ valor }) => ({ value: valor, label: etiquetar(valor) }))
+
+// Campo de texto con estado local (la persona ve lo que escribe al instante) que recién pasa a la URL
+// después de DEBOUNCE_MS sin teclear. Si la URL cambia desde afuera (atrás, un link, un chip) el campo se resincroniza.
+function useCampoConDebounce(valorUrl, alConfirmar) {
+  const [valor, setValor] = useState(valorUrl)
+  const alConfirmarRef = useRef(alConfirmar)
+  alConfirmarRef.current = alConfirmar
+  const timer = useRef(null)
+
+  useEffect(() => {
+    clearTimeout(timer.current)
+    setValor(valorUrl)
+  }, [valorUrl])
+
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  const cambiar = (nuevo) => {
+    setValor(nuevo)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => alConfirmarRef.current(nuevo), DEBOUNCE_MS)
+  }
+
+  // Para acciones discretas (elegir una banda de precio): sin esperar.
+  const fijarYa = (nuevo) => {
+    clearTimeout(timer.current)
+    setValor(nuevo)
+    alConfirmarRef.current(nuevo)
+  }
+
+  return [valor, cambiar, fijarYa]
+}
+
 function ChipsFiltro({ opciones, activos, onToggle }) {
+  if (opciones.length === 0) return <p className="text-xs text-slate-400">Sin opciones por ahora</p>
+
   return (
     <div className="flex flex-wrap gap-2">
       {opciones.map(({ value, label }) => {
@@ -79,215 +123,184 @@ function ChipMarcaLogo({ marca, activa, onToggle }) {
 }
 
 export default function AutosPage() {
-  const [searchParams] = useSearchParams()
-  const [busqueda, setBusqueda] = useState(() => searchParams.get('busqueda') || '')
-  const [precioMin, setPrecioMin] = useState(() => searchParams.get('precioMin') || '')
-  const [precioMax, setPrecioMax] = useState(() => searchParams.get('precioMax') || '')
-  const [soloOfertas, setSoloOfertas] = useState(false)
-  const [ubicacionesActivas, setUbicacionesActivas] = useState([])
-  const [marcasActivas, setMarcasActivas] = useState(() => {
-    const marca = searchParams.get('marca')
-    return marca ? [marca] : []
-  })
-  const [modelosActivos, setModelosActivos] = useState([])
-  const [anioMin, setAnioMin] = useState('')
-  const [anioMax, setAnioMax] = useState('')
-  const [kmMax, setKmMax] = useState('')
-  const [tiposActivos, setTiposActivos] = useState([])
-  const [mecanicasActivas, setMecanicasActivas] = useState([])
-  const [coloresActivos, setColoresActivos] = useState([])
-  const [disponibilidadActiva, setDisponibilidadActiva] = useState([])
-  const [orden, setOrden] = useState('relevancia')
+  const [searchParams, setSearchParams] = useSearchParams()
+  // La URL es la ÚNICA fuente de verdad de los filtros, el orden y la página: recargar, compartir el link
+  // o apretar "atrás" vuelven exactamente al mismo listado.
+  const filtros = useMemo(() => leerFiltros(searchParams), [searchParams])
+
+  // Los campos con debounce y los efectos de más abajo leen siempre el estado más reciente desde acá:
+  // si dos campos confirman casi juntos, el segundo parte de lo que escribió el primero.
+  const filtrosRef = useRef(filtros)
+  filtrosRef.current = filtros
+
+  const [listado, setListado] = useState(null)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+  const [facetas, setFacetas] = useState(null)
   const [mostrarRangosPrecio, setMostrarRangosPrecio] = useState(false)
 
-  const toggleEnLista = (setter) => (valor) =>
-    setter((prev) => (prev.includes(valor) ? prev.filter((v) => v !== valor) : [...prev, valor]))
+  // Cambiar un filtro reemplaza la entrada del historial (no se llena de pasos); cambiar de página la agrega.
+  const escribir = (nuevos, { replace = true } = {}) => {
+    filtrosRef.current = nuevos
+    setSearchParams(aSearchParams(nuevos), { replace })
+  }
+  const escribirFiltro = (clave, valor) => escribir(conFiltro(filtrosRef.current, clave, valor))
 
-  const toggleUbicacion = toggleEnLista(setUbicacionesActivas)
-  const toggleMarca = toggleEnLista(setMarcasActivas)
-  const toggleModelo = toggleEnLista(setModelosActivos)
-  const toggleTipo = toggleEnLista(setTiposActivos)
-  const toggleMecanica = toggleEnLista(setMecanicasActivas)
-  const toggleColor = toggleEnLista(setColoresActivos)
-  const toggleDisponibilidad = toggleEnLista(setDisponibilidadActiva)
-
-  const comoOpciones = (lista) => lista.map((v) => ({ value: v, label: v }))
-
-  const ubicacionesDisponibles = useMemo(
-    () => comoOpciones([...new Set(catalogoMock.map((a) => a.ubicacion))].sort()),
-    []
-  )
-  const marcasDisponibles = useMemo(
-    () => comoOpciones([...new Set(catalogoMock.map((a) => a.marca))].sort()),
-    []
-  )
-  const modelosDisponibles = useMemo(
-    () => comoOpciones([...new Set(catalogoMock.map((a) => a.modelo))].sort()),
-    []
-  )
-  const tiposDisponibles = useMemo(
-    () => comoOpciones([...new Set(catalogoMock.map((a) => a.tipoAuto))].sort()),
-    []
-  )
-  const mecanicasDisponibles = useMemo(
-    () => comoOpciones([...new Set(catalogoMock.map((a) => a.mecanica))].sort()),
-    []
-  )
-  const coloresDisponibles = useMemo(
-    () => comoOpciones([...new Set(catalogoMock.map((a) => a.colorExterior))].sort()),
-    []
-  )
-  const disponibilidadOpciones = useMemo(
-    () => [...new Set(catalogoMock.map((a) => a.estado))].map((estado) => ({ value: estado, label: ESTADO_LABELS[estado] || estado })),
-    []
-  )
-
-  const resultados = useMemo(() => {
-    let lista = catalogoMock.filter((auto) => {
-      const coincideTexto =
-        !busqueda || `${auto.marca} ${auto.modelo}`.toLowerCase().includes(busqueda.toLowerCase())
-      const coincidePrecioMin = !precioMin || auto.precio >= Number(precioMin)
-      const coincidePrecioMax = !precioMax || auto.precio <= Number(precioMax)
-      const coincideOferta = !soloOfertas || auto.oferta
-      const coincideUbicacion = ubicacionesActivas.length === 0 || ubicacionesActivas.includes(auto.ubicacion)
-      const coincideMarca = marcasActivas.length === 0 || marcasActivas.includes(auto.marca)
-      const coincideModelo = modelosActivos.length === 0 || modelosActivos.includes(auto.modelo)
-      const coincideAnioMin = !anioMin || auto.anio >= Number(anioMin)
-      const coincideAnioMax = !anioMax || auto.anio <= Number(anioMax)
-      const coincideKm = !kmMax || auto.kilometraje <= Number(kmMax)
-      const coincideTipo = tiposActivos.length === 0 || tiposActivos.includes(auto.tipoAuto)
-      const coincideMecanica = mecanicasActivas.length === 0 || mecanicasActivas.includes(auto.mecanica)
-      const coincideColor = coloresActivos.length === 0 || coloresActivos.includes(auto.colorExterior)
-      const coincideDisponibilidad =
-        disponibilidadActiva.length === 0 || disponibilidadActiva.includes(auto.estado)
-
-      return (
-        coincideTexto &&
-        coincidePrecioMin &&
-        coincidePrecioMax &&
-        coincideOferta &&
-        coincideUbicacion &&
-        coincideMarca &&
-        coincideModelo &&
-        coincideAnioMin &&
-        coincideAnioMax &&
-        coincideKm &&
-        coincideTipo &&
-        coincideMecanica &&
-        coincideColor &&
-        coincideDisponibilidad
+  const alternar = (clave) => (valor) => {
+    let nuevos = alternarEnLista(filtrosRef.current, clave, valor)
+    // Al sacar una marca, los modelos elegidos que eran de esa marca dejan de tener sentido.
+    if (clave === 'marca' && nuevos.marca.length > 0 && facetas?.modelos) {
+      const marcas = nuevos.marca.map((m) => m.toLowerCase())
+      const modelosValidos = new Set(
+        facetas.modelos.filter((m) => marcas.includes(m.marca.toLowerCase())).map((m) => m.valor)
       )
-    })
+      nuevos = { ...nuevos, modelo: nuevos.modelo.filter((m) => modelosValidos.has(m)) }
+    }
+    escribir(nuevos)
+  }
 
-    if (orden === 'precio_asc') lista = [...lista].sort((a, b) => a.precio - b.precio)
-    if (orden === 'precio_desc') lista = [...lista].sort((a, b) => b.precio - a.precio)
-    if (orden === 'anio_desc') lista = [...lista].sort((a, b) => b.anio - a.anio)
+  const irAPagina = (pagina) => {
+    escribir({ ...filtrosRef.current, pagina }, { replace: false })
+    window.scrollTo({ top: 0 })
+  }
 
-    return lista
-  }, [
-    busqueda,
-    precioMin,
-    precioMax,
-    soloOfertas,
-    ubicacionesActivas,
-    marcasActivas,
-    modelosActivos,
-    anioMin,
-    anioMax,
-    kmMax,
-    tiposActivos,
-    mecanicasActivas,
-    coloresActivos,
-    disponibilidadActiva,
-    orden,
-  ])
+  const limpiarFiltros = () => {
+    filtrosRef.current = leerFiltros(new URLSearchParams())
+    setSearchParams({}, { replace: true })
+  }
+
+  const [busqueda, setBusqueda] = useCampoConDebounce(filtros.busqueda, (v) => escribirFiltro('busqueda', v))
+  const [precioMin, setPrecioMin, fijarPrecioMin] = useCampoConDebounce(filtros.precioMin, (v) =>
+    escribirFiltro('precioMin', v)
+  )
+  const [precioMax, setPrecioMax, fijarPrecioMax] = useCampoConDebounce(filtros.precioMax, (v) =>
+    escribirFiltro('precioMax', v)
+  )
+  const [anioMin, setAnioMin] = useCampoConDebounce(filtros.anioMin, (v) => escribirFiltro('anioMin', v))
+  const [anioMax, setAnioMax] = useCampoConDebounce(filtros.anioMax, (v) => escribirFiltro('anioMax', v))
+  const [kmMax, setKmMax] = useCampoConDebounce(filtros.kmMax, (v) => escribirFiltro('kmMax', v))
+
+  // Las opciones, los rangos y el histograma salen del catálogo real. Se piden una vez por visita
+  // (no se recalculan con los filtros activos: una combinación puede dar 0 resultados y se resuelve con el estado vacío).
+  useEffect(() => {
+    const controller = new AbortController()
+    api.get('/publicaciones/facetas', { signal: controller.signal })
+      .then((res) => setFacetas(res.data))
+      .catch(() => {
+        if (!controller.signal.aborted) setFacetas(null)
+      })
+    return () => controller.abort()
+  }, [])
+
+  // Cada cambio de la URL pide su página; el pedido anterior se cancela para que una respuesta lenta no pise a la nueva.
+  useEffect(() => {
+    const controller = new AbortController()
+    setCargando(true)
+    setError('')
+
+    api.get('/publicaciones', { params: paramsParaApi(filtros), signal: controller.signal })
+      .then((res) => {
+        setListado(res.data)
+        // Página que ya no existe (link viejo, autos vendidos): se reemplaza por la última sin sumar historial.
+        if (res.data.totalPaginas > 0 && filtros.pagina > res.data.totalPaginas) {
+          escribir({ ...filtros, pagina: res.data.totalPaginas })
+        }
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return
+        setListado(null)
+        setError(mensajeDeError(err, 'No pudimos cargar los autos. Probá de nuevo en un rato.'))
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCargando(false)
+      })
+
+    return () => controller.abort()
+    // escribir cambia de identidad en cada render; lo que dispara el pedido es solo la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtros])
+
+  const marcasDisponibles = useMemo(() => opcionesDeFacetas(facetas?.marcas), [facetas])
+  const modelosDisponibles = useMemo(() => {
+    const marcas = filtros.marca.map((m) => m.toLowerCase())
+    const modelos = (facetas?.modelos ?? []).filter((m) => marcas.length === 0 || marcas.includes(m.marca.toLowerCase()))
+    return opcionesDeFacetas([...new Map(modelos.map((m) => [m.valor, m])).values()])
+  }, [facetas, filtros.marca])
+  const coloresDisponibles = useMemo(() => opcionesDeFacetas(facetas?.colores), [facetas])
+  const tiposDisponibles = useMemo(
+    () => opcionesDeFacetas(facetas?.tipos, (v) => TIPO_CARROCERIA[v] ?? v),
+    [facetas]
+  )
+  const zonasDisponibles = useMemo(() => opcionesDeFacetas(facetas?.zonas, (v) => ZONA[v] ?? v), [facetas])
+  const transmisionesDisponibles = useMemo(
+    () => opcionesDeFacetas(facetas?.transmisiones, (v) => TRANSMISION[v] ?? v),
+    [facetas]
+  )
+  const estadosDisponibles = useMemo(
+    () => opcionesDeFacetas(facetas?.estados, (v) => ESTADO[v]?.texto ?? v),
+    [facetas]
+  )
+
+  const rangoPrecio = facetas?.precio ?? null
+  const precioTope = rangoPrecio ? { min: Math.floor(rangoPrecio.min), max: Math.ceil(rangoPrecio.max) } : null
+  const hayRangoDePrecio = precioTope !== null && precioTope.max > precioTope.min
+  const histograma = rangoPrecio?.histograma ?? []
+  const maxCantidadTramo = Math.max(...histograma.map((t) => t.cantidad), 1)
+  const bandas = useMemo(
+    () => (rangoPrecio ? bandasDePrecio(rangoPrecio.min, rangoPrecio.max) : []),
+    [rangoPrecio]
+  )
 
   const hayFiltrosActivos =
-    busqueda ||
-    precioMin ||
-    precioMax ||
-    soloOfertas ||
-    ubicacionesActivas.length > 0 ||
-    marcasActivas.length > 0 ||
-    modelosActivos.length > 0 ||
-    anioMin ||
-    anioMax ||
-    kmMax ||
-    tiposActivos.length > 0 ||
-    mecanicasActivas.length > 0 ||
-    coloresActivos.length > 0 ||
-    disponibilidadActiva.length > 0
+    FILTROS_LISTA.some((clave) => filtros[clave].length > 0) ||
+    FILTROS_ESCALAR.some((clave) => clave !== 'orden' && filtros[clave] !== '')
 
   const filtrosActivos = useMemo(() => {
     const chips = []
-    if (busqueda) chips.push({ id: 'busqueda', label: `"${busqueda}"`, onQuitar: () => setBusqueda('') })
-    if (precioMin) chips.push({ id: 'precioMin', label: `Precio desde $${formatoNumero(precioMin)}`, onQuitar: () => setPrecioMin('') })
-    if (precioMax) chips.push({ id: 'precioMax', label: `Precio hasta $${formatoNumero(precioMax)}`, onQuitar: () => setPrecioMax('') })
-    if (soloOfertas) chips.push({ id: 'ofertas', label: 'Solo ofertas', onQuitar: () => setSoloOfertas(false) })
-    ubicacionesActivas.forEach((u) =>
-      chips.push({ id: `ubicacion-${u}`, label: `Ubicación: ${u}`, onQuitar: () => toggleUbicacion(u) })
-    )
-    marcasActivas.forEach((m) => chips.push({ id: `marca-${m}`, label: `Marca: ${m}`, onQuitar: () => toggleMarca(m) }))
-    modelosActivos.forEach((m) => chips.push({ id: `modelo-${m}`, label: `Modelo: ${m}`, onQuitar: () => toggleModelo(m) }))
-    if (anioMin) chips.push({ id: 'anioMin', label: `Año desde ${anioMin}`, onQuitar: () => setAnioMin('') })
-    if (anioMax) chips.push({ id: 'anioMax', label: `Año hasta ${anioMax}`, onQuitar: () => setAnioMax('') })
-    if (kmMax) chips.push({ id: 'kmMax', label: `Hasta ${formatoNumero(kmMax)} km`, onQuitar: () => setKmMax('') })
-    tiposActivos.forEach((t) => chips.push({ id: `tipo-${t}`, label: `Tipo: ${t}`, onQuitar: () => toggleTipo(t) }))
-    mecanicasActivas.forEach((m) =>
-      chips.push({ id: `mecanica-${m}`, label: `Mecánica: ${m}`, onQuitar: () => toggleMecanica(m) })
-    )
-    coloresActivos.forEach((c) => chips.push({ id: `color-${c}`, label: `Color: ${c}`, onQuitar: () => toggleColor(c) }))
-    disponibilidadActiva.forEach((e) =>
-      chips.push({ id: `estado-${e}`, label: `Estado: ${ESTADO_LABELS[e] || e}`, onQuitar: () => toggleDisponibilidad(e) })
-    )
+    const quitarEscalar = (clave) => () => escribirFiltro(clave, '')
+    const quitarDeLista = (clave) => (valor) => () => alternar(clave)(valor)
+    const deLista = (clave, prefijo, etiquetar = (v) => v) =>
+      filtros[clave].forEach((valor) =>
+        chips.push({ id: `${clave}-${valor}`, label: `${prefijo}: ${etiquetar(valor)}`, onQuitar: quitarDeLista(clave)(valor) })
+      )
+
+    if (filtros.busqueda) chips.push({ id: 'busqueda', label: `"${filtros.busqueda}"`, onQuitar: quitarEscalar('busqueda') })
+    if (filtros.precioMin)
+      chips.push({ id: 'precioMin', label: `Precio desde $${formatoNumero(filtros.precioMin)}`, onQuitar: quitarEscalar('precioMin') })
+    if (filtros.precioMax)
+      chips.push({ id: 'precioMax', label: `Precio hasta $${formatoNumero(filtros.precioMax)}`, onQuitar: quitarEscalar('precioMax') })
+    if (filtros.ofertas) chips.push({ id: 'ofertas', label: 'Solo ofertas', onQuitar: quitarEscalar('ofertas') })
+    deLista('zona', 'Ubicación', (v) => ZONA[v] ?? v)
+    deLista('marca', 'Marca')
+    deLista('modelo', 'Modelo')
+    if (filtros.anioMin) chips.push({ id: 'anioMin', label: `Año desde ${filtros.anioMin}`, onQuitar: quitarEscalar('anioMin') })
+    if (filtros.anioMax) chips.push({ id: 'anioMax', label: `Año hasta ${filtros.anioMax}`, onQuitar: quitarEscalar('anioMax') })
+    if (filtros.kmMax) chips.push({ id: 'kmMax', label: `Hasta ${formatoNumero(filtros.kmMax)} km`, onQuitar: quitarEscalar('kmMax') })
+    deLista('tipo', 'Tipo', (v) => TIPO_CARROCERIA[v] ?? v)
+    deLista('transmision', 'Transmisión', (v) => TRANSMISION[v] ?? v)
+    deLista('color', 'Color')
+    deLista('estado', 'Disponibilidad', (v) => ESTADO[v]?.texto ?? v)
     return chips
-  }, [
-    busqueda,
-    precioMin,
-    precioMax,
-    soloOfertas,
-    ubicacionesActivas,
-    marcasActivas,
-    modelosActivos,
-    anioMin,
-    anioMax,
-    kmMax,
-    tiposActivos,
-    mecanicasActivas,
-    coloresActivos,
-    disponibilidadActiva,
-  ])
+    // Los quitar de cada chip leen filtrosRef: solo hay que rearmar la lista cuando cambia la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtros, facetas])
 
   const categoriasActivas = [
-    Boolean(precioMin) || Boolean(precioMax),
-    soloOfertas,
-    ubicacionesActivas.length > 0,
-    marcasActivas.length > 0,
-    modelosActivos.length > 0,
-    Boolean(anioMin) || Boolean(anioMax) || Boolean(kmMax),
-    tiposActivos.length > 0,
-    mecanicasActivas.length > 0,
-    coloresActivos.length > 0,
-    disponibilidadActiva.length > 0,
+    Boolean(filtros.precioMin) || Boolean(filtros.precioMax),
+    Boolean(filtros.ofertas),
+    filtros.zona.length > 0,
+    filtros.marca.length > 0,
+    filtros.modelo.length > 0,
+    Boolean(filtros.anioMin) || Boolean(filtros.anioMax) || Boolean(filtros.kmMax),
+    filtros.tipo.length > 0,
+    filtros.transmision.length > 0,
+    filtros.color.length > 0,
+    filtros.estado.length > 0,
   ].filter(Boolean).length
 
-  const limpiarFiltros = () => {
-    setBusqueda('')
-    setPrecioMin('')
-    setPrecioMax('')
-    setSoloOfertas(false)
-    setUbicacionesActivas([])
-    setMarcasActivas([])
-    setModelosActivos([])
-    setAnioMin('')
-    setAnioMax('')
-    setKmMax('')
-    setTiposActivos([])
-    setMecanicasActivas([])
-    setColoresActivos([])
-    setDisponibilidadActiva([])
-    setOrden('relevancia')
-  }
+  const ordenActual = ORDENES.some((o) => o.value === filtros.orden) ? filtros.orden : 'relevancia'
+  const total = listado?.totalElementos ?? 0
+  const sinResultados = !cargando && !error && listado !== null && listado.contenido.length === 0
 
   return (
     <main className="min-h-screen bg-[#fafaf9]">
@@ -299,7 +312,8 @@ export default function AutosPage() {
           <input
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscá por modelo"
+            placeholder="Buscá por marca o modelo"
+            maxLength={60}
             className="w-full text-sm font-semibold text-navy outline-none placeholder:font-normal placeholder:text-slate-400"
           />
         </div>
@@ -345,16 +359,17 @@ export default function AutosPage() {
                 )}
               </div>
 
-              <FiltroAcordeon titulo="Precio" contador={(precioMin ? 1 : 0) + (precioMax ? 1 : 0)}>
+              <FiltroAcordeon titulo="Precio" contador={(filtros.precioMin ? 1 : 0) + (filtros.precioMax ? 1 : 0)}>
                 <div className="grid grid-cols-2 gap-2">
                   <label className="flex min-w-0 items-center gap-1 rounded-xl border border-slate-200 px-2 py-2 transition focus-within:border-bronze">
                     <span className="shrink-0 text-xs font-bold text-slate-400">$</span>
                     <input
                       type="text"
                       inputMode="numeric"
+                      aria-label="Precio desde"
                       value={precioMin ? formatoNumero(precioMin) : ''}
                       onChange={(e) => setPrecioMin(e.target.value.replace(/\D/g, ''))}
-                      placeholder={formatoNumero(PRECIO_MIN)}
+                      placeholder={precioTope ? formatoNumero(precioTope.min) : 'Desde'}
                       className="w-full min-w-0 text-xs font-semibold text-navy outline-none"
                     />
                   </label>
@@ -363,97 +378,102 @@ export default function AutosPage() {
                     <input
                       type="text"
                       inputMode="numeric"
+                      aria-label="Precio hasta"
                       value={precioMax ? formatoNumero(precioMax) : ''}
                       onChange={(e) => setPrecioMax(e.target.value.replace(/\D/g, ''))}
-                      placeholder={formatoNumero(PRECIO_MAX)}
+                      placeholder={precioTope ? formatoNumero(precioTope.max) : 'Hasta'}
                       className="w-full min-w-0 text-xs font-semibold text-navy outline-none"
                     />
                   </label>
                 </div>
 
-                {(() => {
-                  // Los valores que escribe la persona en los inputs pueden ser
-                  // cualquier número (incluso fuera del rango de precios del
-                  // catálogo, como $0). Para el slider y el histograma siempre
-                  // los "recortamos" entre PRECIO_MIN y PRECIO_MAX, para que el
-                  // resaltado se vea siempre coherente con las dos puntas.
-                  const clamp = (valor) => Math.min(PRECIO_MAX, Math.max(PRECIO_MIN, valor))
-                  const sliderMin = clamp(precioMin ? Number(precioMin) : PRECIO_MIN)
-                  const sliderMax = clamp(precioMax ? Number(precioMax) : PRECIO_MAX)
-                  const porcentajeMin = ((sliderMin - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100
-                  const porcentajeMax = ((sliderMax - PRECIO_MIN) / (PRECIO_MAX - PRECIO_MIN)) * 100
+                {hayRangoDePrecio &&
+                  (() => {
+                    // Lo que escribe la persona puede ser cualquier número (incluso fuera del rango del catálogo,
+                    // como $0). Para el slider y el histograma se "recorta" entre el mínimo y el máximo reales,
+                    // así el resaltado siempre es coherente con las dos puntas.
+                    const { min, max } = precioTope
+                    const clamp = (valor) => Math.min(max, Math.max(min, valor))
+                    const sliderMin = clamp(precioMin ? Number(precioMin) : min)
+                    const sliderMax = clamp(precioMax ? Number(precioMax) : max)
+                    const porcentajeMin = ((sliderMin - min) / (max - min)) * 100
+                    const porcentajeMax = ((sliderMax - min) / (max - min)) * 100
 
-                  return (
-                    <>
-                      <div className="mt-4 flex h-14 items-end gap-0.5">
-                        {HISTOGRAMA_PRECIOS.map((bin, i) => {
-                          const centro = (bin.desde + bin.hasta) / 2
-                          const enRango = centro >= sliderMin && centro <= sliderMax
-                          const altura = Math.max((bin.cantidad / MAX_CANTIDAD_BIN_PRECIO) * 100, 6)
-                          return (
-                            <div
-                              key={i}
-                              title={`${bin.cantidad} auto(s)`}
-                              className={`flex-1 rounded-sm transition-colors ${enRango ? 'bg-bronze' : 'bg-slate-200'}`}
-                              style={{ height: `${altura}%` }}
-                            />
-                          )
-                        })}
-                      </div>
+                    return (
+                      <>
+                        <div className="mt-4 flex h-14 items-end gap-0.5">
+                          {histograma.map((tramo, i) => {
+                            const centro = (tramo.desde + tramo.hasta) / 2
+                            const enRango = centro >= sliderMin && centro <= sliderMax
+                            const altura = Math.max((tramo.cantidad / maxCantidadTramo) * 100, 6)
+                            return (
+                              <div
+                                key={i}
+                                title={`${tramo.cantidad} auto(s)`}
+                                className={`flex-1 rounded-sm transition-colors ${enRango ? 'bg-bronze' : 'bg-slate-200'}`}
+                                style={{ height: `${altura}%` }}
+                              />
+                            )
+                          })}
+                        </div>
 
-                      <div className="relative mt-3 h-4">
-                        <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200" />
-                        <div
-                          className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-bronze"
-                          style={{
-                            left: `${porcentajeMin}%`,
-                            right: `${100 - porcentajeMax}%`,
-                          }}
-                        />
-                        <input
-                          type="range"
-                          min={PRECIO_MIN}
-                          max={PRECIO_MAX}
-                          value={sliderMin}
-                          onChange={(e) => {
-                            const valor = Math.min(Number(e.target.value), sliderMax)
-                            setPrecioMin(String(valor))
-                          }}
-                          className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
-                        />
-                        <input
-                          type="range"
-                          min={PRECIO_MIN}
-                          max={PRECIO_MAX}
-                          value={sliderMax}
-                          onChange={(e) => {
-                            const valor = Math.max(Number(e.target.value), sliderMin)
-                            setPrecioMax(String(valor))
-                          }}
-                          className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
-                        />
-                      </div>
-                    </>
-                  )
-                })()}
+                        <div className="relative mt-3 h-4">
+                          <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200" />
+                          <div
+                            className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-bronze"
+                            style={{
+                              left: `${porcentajeMin}%`,
+                              right: `${100 - porcentajeMax}%`,
+                            }}
+                          />
+                          <input
+                            type="range"
+                            aria-label="Precio mínimo"
+                            min={min}
+                            max={max}
+                            value={sliderMin}
+                            onChange={(e) => {
+                              const valor = Math.min(Number(e.target.value), sliderMax)
+                              setPrecioMin(String(valor))
+                            }}
+                            className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
+                          />
+                          <input
+                            type="range"
+                            aria-label="Precio máximo"
+                            min={min}
+                            max={max}
+                            value={sliderMax}
+                            onChange={(e) => {
+                              const valor = Math.max(Number(e.target.value), sliderMin)
+                              setPrecioMax(String(valor))
+                            }}
+                            className="precio-range pointer-events-none absolute inset-0 h-4 w-full appearance-none bg-transparent"
+                          />
+                        </div>
+                      </>
+                    )
+                  })()}
 
-                <button
-                  type="button"
-                  onClick={() => setMostrarRangosPrecio((v) => !v)}
-                  className="mt-3 text-xs font-bold text-bronze hover:underline"
-                >
-                  Ver rangos de precios
-                </button>
+                {bandas.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setMostrarRangosPrecio((v) => !v)}
+                    className="mt-3 text-xs font-bold text-bronze hover:underline"
+                  >
+                    Ver rangos de precios
+                  </button>
+                )}
 
-                {mostrarRangosPrecio && (
+                {mostrarRangosPrecio && bandas.length > 1 && (
                   <div className="mt-2 space-y-1 rounded-xl border border-slate-100 bg-slate-50 p-2">
-                    {BANDAS_PRECIO.map((banda, i) => (
+                    {bandas.map((banda, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => {
-                          setPrecioMin(String(banda.desde))
-                          setPrecioMax(String(banda.hasta))
+                          fijarPrecioMin(String(banda.desde))
+                          fijarPrecioMax(String(banda.hasta))
                         }}
                         className="block w-full rounded-lg px-2 py-1.5 text-left text-xs font-semibold text-navy-dark transition hover:bg-bronze/10"
                       >
@@ -464,49 +484,61 @@ export default function AutosPage() {
                 )}
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Ofertas" contador={soloOfertas ? 1 : 0}>
+              <FiltroAcordeon titulo="Ofertas" contador={filtros.ofertas ? 1 : 0}>
                 <label className="flex items-center gap-2 text-sm font-semibold text-navy">
                   <input
                     type="checkbox"
-                    checked={soloOfertas}
-                    onChange={(e) => setSoloOfertas(e.target.checked)}
+                    checked={filtros.ofertas === 'true'}
+                    onChange={(e) => escribirFiltro('ofertas', e.target.checked ? 'true' : '')}
                     className="h-4 w-4 rounded border-slate-300 text-bronze focus:ring-bronze"
                   />
                   Solo autos en oferta
                 </label>
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Ubicación" contador={ubicacionesActivas.length}>
-                <ChipsFiltro opciones={ubicacionesDisponibles} activos={ubicacionesActivas} onToggle={toggleUbicacion} />
+              <FiltroAcordeon titulo="Ubicación" contador={filtros.zona.length}>
+                <ChipsFiltro opciones={zonasDisponibles} activos={filtros.zona} onToggle={alternar('zona')} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Marca" contador={marcasActivas.length}>
-                <div className="flex flex-wrap gap-2">
-                  {marcasDisponibles.map(({ value }) => (
-                    <ChipMarcaLogo key={value} marca={value} activa={marcasActivas.includes(value)} onToggle={toggleMarca} />
-                  ))}
-                </div>
+              <FiltroAcordeon titulo="Marca" contador={filtros.marca.length}>
+                {marcasDisponibles.length === 0 ? (
+                  <p className="text-xs text-slate-400">Sin opciones por ahora</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {marcasDisponibles.map(({ value }) => (
+                      <ChipMarcaLogo
+                        key={value}
+                        marca={value}
+                        activa={filtros.marca.includes(value)}
+                        onToggle={alternar('marca')}
+                      />
+                    ))}
+                  </div>
+                )}
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Modelo" contador={modelosActivos.length}>
-                <ChipsFiltro opciones={modelosDisponibles} activos={modelosActivos} onToggle={toggleModelo} />
+              <FiltroAcordeon titulo="Modelo" contador={filtros.modelo.length}>
+                <ChipsFiltro opciones={modelosDisponibles} activos={filtros.modelo} onToggle={alternar('modelo')} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Año y Kilometraje" contador={(anioMin ? 1 : 0) + (anioMax ? 1 : 0) + (kmMax ? 1 : 0)}>
+              <FiltroAcordeon
+                titulo="Año y Kilometraje"
+                contador={(filtros.anioMin ? 1 : 0) + (filtros.anioMax ? 1 : 0) + (filtros.kmMax ? 1 : 0)}
+              >
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="number"
                       value={anioMin}
                       onChange={(e) => setAnioMin(e.target.value)}
-                      placeholder="Año desde"
+                      placeholder={facetas?.anio ? `Año desde (${facetas.anio.min})` : 'Año desde'}
                       className={inputClase}
                     />
                     <input
                       type="number"
                       value={anioMax}
                       onChange={(e) => setAnioMax(e.target.value)}
-                      placeholder="Año hasta"
+                      placeholder={facetas?.anio ? `Año hasta (${facetas.anio.max})` : 'Año hasta'}
                       className={inputClase}
                     />
                   </div>
@@ -520,30 +552,37 @@ export default function AutosPage() {
                 </div>
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Tipo de Auto" contador={tiposActivos.length}>
-                <ChipsFiltro opciones={tiposDisponibles} activos={tiposActivos} onToggle={toggleTipo} />
+              <FiltroAcordeon titulo="Tipo de Auto" contador={filtros.tipo.length}>
+                <ChipsFiltro opciones={tiposDisponibles} activos={filtros.tipo} onToggle={alternar('tipo')} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Mecánica" contador={mecanicasActivas.length}>
-                <ChipsFiltro opciones={mecanicasDisponibles} activos={mecanicasActivas} onToggle={toggleMecanica} />
+              <FiltroAcordeon titulo="Transmisión" contador={filtros.transmision.length}>
+                <ChipsFiltro
+                  opciones={transmisionesDisponibles}
+                  activos={filtros.transmision}
+                  onToggle={alternar('transmision')}
+                />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Color exterior" contador={coloresActivos.length}>
-                <ChipsFiltro opciones={coloresDisponibles} activos={coloresActivos} onToggle={toggleColor} />
+              <FiltroAcordeon titulo="Color exterior" contador={filtros.color.length}>
+                <ChipsFiltro opciones={coloresDisponibles} activos={filtros.color} onToggle={alternar('color')} />
               </FiltroAcordeon>
 
-              <FiltroAcordeon titulo="Disponibilidad del auto" contador={disponibilidadActiva.length}>
-                <ChipsFiltro opciones={disponibilidadOpciones} activos={disponibilidadActiva} onToggle={toggleDisponibilidad} />
+              <FiltroAcordeon titulo="Disponibilidad del auto" contador={filtros.estado.length}>
+                <ChipsFiltro opciones={estadosDisponibles} activos={filtros.estado} onToggle={alternar('estado')} />
               </FiltroAcordeon>
             </div>
           </aside>
 
           <section>
             <div className="mb-6 flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-500">{resultados.length} resultados</p>
+              <p className="text-sm font-semibold text-slate-500" aria-live="polite">
+                {listado === null ? (cargando ? 'Cargando autos...' : '') : `${formatoNumero(total)} resultados`}
+              </p>
               <select
-                value={orden}
-                onChange={(e) => setOrden(e.target.value)}
+                value={ordenActual}
+                onChange={(e) => escribirFiltro('orden', e.target.value === 'relevancia' ? '' : e.target.value)}
+                aria-label="Ordenar por"
                 className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-navy outline-none"
               >
                 {ORDENES.map((o) => (
@@ -554,17 +593,37 @@ export default function AutosPage() {
               </select>
             </div>
 
-            {resultados.length === 0 ? (
-              <p className="text-slate-500">No encontramos autos con esos filtros.</p>
-            ) : (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {resultados.map((p) => (
+            {error && <p className="mb-6 text-red-600">{error}</p>}
+
+            {sinResultados &&
+              (hayFiltrosActivos ? (
+                <div>
+                  <p className="text-slate-500">No encontramos autos con esos filtros.</p>
+                  <button
+                    type="button"
+                    onClick={limpiarFiltros}
+                    className="mt-3 rounded-full border border-bronze px-4 py-2 text-xs font-bold text-bronze transition hover:bg-bronze hover:text-white"
+                  >
+                    Limpiar filtros
+                  </button>
+                </div>
+              ) : (
+                <p className="text-slate-500">Todavía no hay autos publicados.</p>
+              ))}
+
+            {listado !== null && listado.contenido.length > 0 && (
+              <div
+                className={`grid gap-5 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${cargando ? 'opacity-60' : ''}`}
+              >
+                {listado.contenido.map((p) => (
                   <Link key={p.id} to={`/publicaciones/${p.id}`}>
                     <PublicacionCard publicacion={p} />
                   </Link>
                 ))}
               </div>
             )}
+
+            <Paginador pagina={filtros.pagina} totalPaginas={listado?.totalPaginas ?? 0} onCambiar={irAPagina} />
           </section>
         </div>
       </div>
