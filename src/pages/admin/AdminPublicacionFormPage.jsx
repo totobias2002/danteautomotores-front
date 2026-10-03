@@ -81,7 +81,9 @@ const publicacionAForm = (p) => ({
   marca: p.marca ?? '',
   modelo: p.modelo ?? '',
   anio: p.anio != null ? String(p.anio) : '',
-  precio: p.precio != null ? String(p.precio) : '',
+  // El campo de precio solo maneja enteros (formatearPrecio descarta todo lo que no sea dígito): un "12500.5"
+  // se mostraría como 125.005. Los precios son números redondos, así que se redondea al cargar.
+  precio: p.precio != null ? String(Math.round(Number(p.precio))) : '',
   moneda: p.moneda ?? 'ARS',
   kilometraje: p.kilometraje != null ? String(p.kilometraje) : '',
   transmision: p.transmision ?? 'MANUAL',
