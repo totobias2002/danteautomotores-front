@@ -5,6 +5,7 @@ import api from '../../services/api.js'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
 import { urlMiniatura } from '../../utils/cloudinary.js'
 import { mensajeDeError } from '../../utils/errores.js'
+import { ZONA, opcionesDe } from '../../utils/etiquetas.js'
 
 const AGENCIA_INICIAL = {
   nombre: '',
@@ -13,6 +14,7 @@ const AGENCIA_INICIAL = {
   telefonoContacto: '',
   descripcion: '',
   logo: '',
+  zona: '',
 }
 
 const ESTADOS = [
@@ -90,7 +92,7 @@ export default function AdminDashboardPage() {
     e.preventDefault()
     setError('')
     try {
-      await api.post('/agencias', nuevaAgencia)
+      await api.post('/agencias', { ...nuevaAgencia, zona: nuevaAgencia.zona || null })
       setNuevaAgencia(AGENCIA_INICIAL)
       setMostrarFormAgencia(false)
       cargar()
@@ -122,6 +124,7 @@ export default function AdminDashboardPage() {
       telefonoContacto: a.telefonoContacto ?? '',
       descripcion: a.descripcion ?? '',
       logo: a.logo ?? '',
+      zona: a.zona ?? '',
     })
   }
 
@@ -130,7 +133,7 @@ export default function AdminDashboardPage() {
     setErrorEdicion('')
     const { id, ...datos } = agenciaEditando
     try {
-      await api.put(`/agencias/${id}`, datos)
+      await api.put(`/agencias/${id}`, { ...datos, zona: datos.zona || null })
       setAgenciaEditando(null)
       cargar()
     } catch (err) {
@@ -235,6 +238,7 @@ export default function AdminDashboardPage() {
                 <CampoAgencia label="Dirección" {...campoAgencia('direccion')} />
                 <CampoAgencia label="Teléfono" {...campoAgencia('telefonoContacto')} />
                 <CampoAgencia label="Logo (URL)" {...campoAgencia('logo')} />
+                <SelectZona {...campoAgencia('zona')} />
                 <CampoAgencia label="Descripción" {...campoAgencia('descripcion')} />
               </div>
               {error && <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>}
@@ -288,6 +292,10 @@ export default function AdminDashboardPage() {
                           value={agenciaEditando.logo}
                           onChange={(e) => setAgenciaEditando({ ...agenciaEditando, logo: e.target.value })}
                         />
+                        <SelectZona
+                          value={agenciaEditando.zona}
+                          onChange={(e) => setAgenciaEditando({ ...agenciaEditando, zona: e.target.value })}
+                        />
                         <CampoAgencia
                           label="Descripción"
                           value={agenciaEditando.descripcion}
@@ -320,6 +328,11 @@ export default function AdminDashboardPage() {
                     <span className="flex items-center gap-2.5 text-sm font-semibold text-navy-dark">
                       <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
                       {a.nombre} <span className="font-normal text-slate-400">/{a.slug}</span>
+                      {a.zona && (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-500">
+                          {ZONA[a.zona] ?? a.zona}
+                        </span>
+                      )}
                     </span>
                     <div className="flex items-center gap-3">
                       <button
@@ -564,6 +577,26 @@ function CampoAgencia({ label, ...props }) {
         {...props}
         className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
       />
+    </label>
+  )
+}
+
+// La zona es opcional ("Sin especificar" se envía como null) y alimenta el filtro por zona del catálogo público.
+function SelectZona(props) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-xs font-bold text-slate-500">Zona</span>
+      <select
+        {...props}
+        className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
+      >
+        <option value="">Sin especificar</option>
+        {opcionesDe(ZONA).map((z) => (
+          <option key={z.value} value={z.value}>
+            {z.label}
+          </option>
+        ))}
+      </select>
     </label>
   )
 }
