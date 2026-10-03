@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Building2, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
 import { mensajeDeError } from '../../utils/errores.js'
 
@@ -19,6 +19,17 @@ const ESTADOS = [
   { value: 'VENDIDO', label: 'Vendido' },
 ]
 
+const FILTROS_ESTADO = [
+  { value: 'TODOS', label: 'Todos' },
+  { value: 'DISPONIBLE', label: 'Disponibles' },
+  { value: 'RESERVADO', label: 'Reservados' },
+  { value: 'VENDIDO', label: 'Vendidos' },
+]
+
+// Para buscar sin distinguir mayúsculas ni acentos.
+const normalizar = (texto) =>
+  String(texto ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
 export default function AdminDashboardPage() {
   const [agencias, setAgencias] = useState([])
   const [publicaciones, setPublicaciones] = useState([])
@@ -30,6 +41,21 @@ export default function AdminDashboardPage() {
   const [errorListado, setErrorListado] = useState('')
   const [errorAgencias, setErrorAgencias] = useState('')
   const [agenciaAEliminar, setAgenciaAEliminar] = useState(null)
+  const [filtroEstado, setFiltroEstado] = useState('TODOS')
+  const [busqueda, setBusqueda] = useState('')
+  const [errorAccion, setErrorAccion] = useState('')
+
+  const publicacionesFiltradas = useMemo(() => {
+    const texto = normalizar(busqueda.trim())
+    return publicaciones.filter(
+      (p) =>
+        (filtroEstado === 'TODOS' || p.estado === filtroEstado) &&
+        normalizar(`${p.marca} ${p.modelo}`).includes(texto)
+    )
+  }, [publicaciones, filtroEstado, busqueda])
+
+  const cantidadPorEstado = (estado) =>
+    estado === 'TODOS' ? publicaciones.length : publicaciones.filter((p) => p.estado === estado).length
 
   const cargar = () => {
     api.get('/agencias')
@@ -102,9 +128,29 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // Reemplaza solo la fila modificada: el auto sigue en el listado aunque cambie de estado.
+  function actualizarEnLista(data) {
+    setPublicaciones((lista) => lista.map((p) => (p.id === data.id ? data : p)))
+  }
+
   const cambiarEstado = async (id, estado) => {
-    await api.patch(`/publicaciones/${id}/estado`, { estado })
-    cargar()
+    setErrorAccion('')
+    try {
+      const { data } = await api.patch(`/publicaciones/${id}/estado`, { estado })
+      actualizarEnLista(data)
+    } catch (err) {
+      setErrorAccion(mensajeDeError(err, 'No se pudo cambiar el estado.'))
+    }
+  }
+
+  const cambiarDestacado = async (p) => {
+    setErrorAccion('')
+    try {
+      const { data } = await api.patch(`/publicaciones/${p.id}/destacado`, { destacado: !p.destacado })
+      actualizarEnLista(data)
+    } catch (err) {
+      setErrorAccion(mensajeDeError(err, 'No se pudo actualizar el destacado.'))
+    }
   }
 
   const eliminarPublicacion = async (id) => {
@@ -286,15 +332,48 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
 
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {FILTROS_ESTADO.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFiltroEstado(f.value)}
+                aria-pressed={filtroEstado === f.value}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  filtroEstado === f.value
+                    ? 'bg-navy text-white'
+                    : 'border border-slate-200 text-navy-dark hover:border-bronze'
+                }`}
+              >
+                {f.label} ({cantidadPorEstado(f.value)})
+              </button>
+            ))}
+            <label className="flex flex-1 items-center gap-2 rounded-xl border border-slate-200 px-3 py-1.5 transition focus-within:border-bronze sm:min-w-[220px]">
+              <Search className="h-4 w-4 shrink-0 text-slate-400" />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por marca o modelo"
+                className="w-full text-sm font-semibold text-navy outline-none placeholder:font-normal"
+              />
+            </label>
+          </div>
+
           {errorListado && <p className="mb-3 text-sm font-semibold text-red-600">{errorListado}</p>}
+          {errorAccion && <p className="mb-3 text-sm font-semibold text-red-600">{errorAccion}</p>}
 
           {publicaciones.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
               Todavía no hay autos publicados.
             </p>
+          ) : publicacionesFiltradas.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+              No hay autos que coincidan con el filtro.
+            </p>
           ) : (
             <ul className="flex flex-col gap-2">
-              {publicaciones.map((p) => (
+              {publicacionesFiltradas.map((p) => (
                 <li
                   key={p.id}
                   className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
@@ -302,8 +381,23 @@ export default function AdminDashboardPage() {
                   <span className="text-sm font-semibold text-navy-dark">
                     {p.marca} {p.modelo} · {p.anio} — {p.moneda} {Number(p.precio).toLocaleString('es-AR')}{' '}
                     <span className="font-normal text-slate-400">({p.agenciaNombre})</span>
+                    {p.destacado && (
+                      <span className="ml-2 rounded-full bg-bronze/10 px-2 py-0.5 text-[11px] font-bold text-bronze">
+                        Destacado
+                      </span>
+                    )}
                   </span>
                   <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => cambiarDestacado(p)}
+                      aria-pressed={p.destacado}
+                      aria-label={p.destacado ? 'Quitar de destacados' : 'Marcar como destacado'}
+                      title={p.destacado ? 'Quitar de destacados' : 'Marcar como destacado'}
+                      className={`transition ${p.destacado ? 'text-bronze' : 'text-slate-300 hover:text-bronze'}`}
+                    >
+                      <Star className="h-4 w-4" fill={p.destacado ? 'currentColor' : 'none'} />
+                    </button>
                     <select
                       value={p.estado}
                       onChange={(e) => cambiarEstado(p.id, e.target.value)}
