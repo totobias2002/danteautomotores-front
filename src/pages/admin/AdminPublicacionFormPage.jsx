@@ -527,7 +527,7 @@ export default function AdminPublicacionFormPage() {
                 inputMode="numeric"
                 placeholder="0"
                 value={formatearPrecio(form.precioAnterior)}
-                onChange={(e) => setForm({ ...form, precioAnterior: e.target.value.replace(/D/g, '') })}
+                onChange={(e) => setForm({ ...form, precioAnterior: e.target.value.replace(/\D/g, '') })}
                 className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
               />
               <span className="text-xs text-slate-400">
