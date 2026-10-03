@@ -34,11 +34,12 @@ const FILTROS_ESTADO = [
 const normalizar = (texto) =>
   String(texto ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
-// La portada es la foto de orden 0 (decisión 01-06); si por algún motivo ninguna lo tiene,
-// la primera del array, que el backend ya entrega ordenado por orden.
+// La portada es la primera foto: el backend las entrega ordenadas con su única regla de portada
+// (orden, null como 0, desempate por id), la misma que usan la card pública, el detalle y el
+// formulario de edición. Buscar la de orden 0 podía elegir otra si una foto vieja tiene orden null.
 const fotoDePortada = (fotos) => {
   if (!Array.isArray(fotos) || fotos.length === 0) return null
-  return fotos.find((f) => f.orden === 0) ?? fotos[0]
+  return fotos[0]
 }
 
 export default function AdminDashboardPage() {
