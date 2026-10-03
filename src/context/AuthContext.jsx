@@ -7,8 +7,15 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState(() => {
-    const guardado = localStorage.getItem('usuario')
-    return guardado ? JSON.parse(guardado) : null
+    // Un valor corrupto (editado a mano, escritura cortada) no debe tirar abajo toda la app: se descarta la sesión.
+    try {
+      const guardado = localStorage.getItem('usuario')
+      return guardado ? JSON.parse(guardado) : null
+    } catch {
+      localStorage.removeItem('usuario')
+      localStorage.removeItem('token')
+      return null
+    }
   })
 
   // Sesión vencida (401 fuera de /auth/*): se limpia la sesión y se lleva a /login,
