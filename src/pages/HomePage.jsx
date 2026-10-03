@@ -6,13 +6,8 @@ import PublicacionCard from '../components/PublicacionCard.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
 import SeccionFinanciamiento from '../components/SeccionFinanciamiento.jsx'
 import LogoMarca, { LOGOS } from '../components/LogoMarca.jsx'
-import { destacadosMock } from '../mocks/homeMock.js'
 import { BANDAS_PRECIO, catalogoMock } from '../mocks/catalogoMock.js'
-
-// TODO: sacar esto cuando el backend esté levantado y probado.
-// Mientras USE_MOCK_DATA sea true, el Home ignora la API real y muestra
-// datos hardcodeados solo para previsualizar el diseño.
-const USE_MOCK_DATA = true
+import { mensajeDeError } from '../utils/errores.js'
 
 const brands = ['Toyota', 'Volkswagen', 'Jeep', 'Chevrolet', 'Ford', 'Fiat', 'Peugeot', 'Renault', 'BMW']
 
@@ -38,6 +33,7 @@ export default function HomePage() {
   const [publicaciones, setPublicaciones] = useState([])
   const [filtros, setFiltros] = useState({ marca: '' })
   const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
   const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false)
 
   const sugerencias = useMemo(() => {
@@ -46,31 +42,22 @@ export default function HomePage() {
     return SUGERENCIAS_BASE.filter((s) => s.toLowerCase().includes(q)).slice(0, 6)
   }, [filtros.marca])
 
-  const buscarMock = (params = {}) => {
-    let resultado = destacadosMock
-    if (params.marca) {
-      const q = params.marca.toLowerCase()
-      resultado = resultado.filter((p) => `${p.marca} ${p.modelo}`.toLowerCase().includes(q))
-    }
-    setPublicaciones(resultado)
-  }
-
-  const buscar = (params = {}) => {
-    setCargando(true)
-    if (USE_MOCK_DATA) {
-      buscarMock(params)
-      setCargando(false)
-      return
-    }
-    api.get('/publicaciones', { params })
-      .then((res) => setPublicaciones(res.data))
-      .catch(() => setPublicaciones([]))
-      .finally(() => setCargando(false))
-  }
-
+  // Los destacados los marca el admin y vienen del back sin token (los vendidos nunca aparecen acá).
   useEffect(() => {
-    buscar()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelado = false
+    api.get('/publicaciones/destacados', { params: { limite: 6 } })
+      .then((res) => {
+        if (!cancelado) setPublicaciones(res.data)
+      })
+      .catch((err) => {
+        if (!cancelado) setError(mensajeDeError(err, 'No pudimos cargar los autos destacados.'))
+      })
+      .finally(() => {
+        if (!cancelado) setCargando(false)
+      })
+    return () => {
+      cancelado = true
+    }
   }, [])
 
   const handleSubmit = (e) => {
@@ -248,20 +235,18 @@ export default function HomePage() {
               {cargando ? 'Buscando...' : 'Autos destacados'}
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setFiltros({ marca: '' })
-              buscar({})
-            }}
+          <Link
+            to="/autos"
             className="hidden items-center gap-2 text-sm font-bold text-navy transition hover:text-bronze sm:flex"
           >
             Ver todos <ArrowRight className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
 
-        {!cargando && publicaciones.length === 0 && (
-          <p className="text-slate-500">No encontramos autos con esos filtros.</p>
+        {error && <p className="text-red-600">{error}</p>}
+
+        {!cargando && !error && publicaciones.length === 0 && (
+          <p className="text-slate-500">Todavía no hay autos destacados.</p>
         )}
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

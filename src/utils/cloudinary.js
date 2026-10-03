@@ -3,6 +3,12 @@
 // Cloudinary elija la calidad y el formato más livianos que soporte el navegador.
 export const TRANSFORMACION_MINIATURA = 'c_fill,w_160,h_120,q_auto,f_auto'
 
+// Las fotos originales pesan hasta 10 MB: el catálogo público nunca debe descargarlas completas.
+// La card del listado muestra la foto a ~320x210 px (640x420 cubre pantallas 2x); en el detalle se limita
+// el ancho a 1280 px sin recortar. q_auto,f_auto deja que Cloudinary elija calidad y formato más livianos.
+export const TRANSFORMACION_CARD = 'c_fill,w_640,h_420,q_auto,f_auto'
+export const TRANSFORMACION_DETALLE = 'c_limit,w_1280,q_auto,f_auto'
+
 const MARCA_SUBIDA = '/image/upload/'
 
 // Inserta la transformación de Cloudinary en la URL de una foto. Solo toca imágenes de

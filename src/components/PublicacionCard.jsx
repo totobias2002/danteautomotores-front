@@ -1,4 +1,5 @@
 import { MapPin, ShieldCheck, TrendingUp } from 'lucide-react'
+import { TRANSFORMACION_CARD, urlMiniatura } from '../utils/cloudinary.js'
 
 const ESTADO_BADGE = {
   RESERVADO: { texto: 'Reservado', clase: 'bg-amber-100 text-amber-800' },
@@ -8,7 +9,8 @@ const ESTADO_BADGE = {
 const formatoNumero = (valor) => new Intl.NumberFormat('es-AR').format(valor)
 
 export default function PublicacionCard({ publicacion }) {
-  const foto = publicacion.fotos?.[0]?.url
+  // El listado público trae fotoPortada; el fallback a fotos[0] mantiene andando las pantallas que reciben la respuesta completa.
+  const foto = urlMiniatura(publicacion.fotoPortada ?? publicacion.fotos?.[0]?.url, TRANSFORMACION_CARD)
   const estadoBadge = ESTADO_BADGE[publicacion.estado]
 
   const specs = [
@@ -24,6 +26,9 @@ export default function PublicacionCard({ publicacion }) {
           <img
             src={foto}
             alt={`${publicacion.marca} ${publicacion.modelo}`}
+            loading="lazy"
+            width={640}
+            height={420}
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           />
         ) : (
