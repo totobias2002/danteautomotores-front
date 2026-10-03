@@ -13,8 +13,9 @@ export default function Footer() {
           <Link to="/registro" className="transition hover:text-bronze-light">Crear cuenta</Link>
         </div>
       </div>
-      <div className="mx-auto mt-8 max-w-7xl border-t border-white/10 pt-5 text-[10px] text-slate-500">
-        © {new Date().getFullYear()} DanteAutomotores. Todos los derechos reservados.
+      <div className="mx-auto mt-8 flex max-w-7xl flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-5 text-[10px] text-slate-500">
+        <span>© {new Date().getFullYear()} DanteAutomotores. Todos los derechos reservados.</span>
+        <Link to="/creditos" className="transition hover:text-slate-300">Créditos de imágenes</Link>
       </div>
     </footer>
   )
