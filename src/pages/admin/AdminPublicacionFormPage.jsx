@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, ImagePlus, Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, ImagePlus, Loader2, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
 import { mensajeDeError } from '../../utils/errores.js'
 
@@ -43,6 +43,16 @@ const MODELOS_SUGERIDOS = [
 ]
 
 const MAX_FOTOS = 10
+const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_BYTES = 10 * 1024 * 1024
+
+// Devuelve el motivo por el que el backend rechazaría el archivo, o null si parece válido.
+// El backend vuelve a validar el tipo real; esto solo evita subir de balde un archivo que seguro falla.
+function motivoRechazo(archivo) {
+  if (!TIPOS_PERMITIDOS.includes(archivo.type)) return 'formato no permitido (usá JPG, PNG o WebP)'
+  if (archivo.size > MAX_BYTES) return 'pesa más de 10 MB'
+  return null
+}
 
 const formatearPrecio = (valor) => {
   const soloDigitos = String(valor ?? '').replace(/\D/g, '')
@@ -90,6 +100,7 @@ export default function AdminPublicacionFormPage() {
   const [cargando, setCargando] = useState(false)
   const [cargandoInicial, setCargandoInicial] = useState(esEdicion)
   const [subiendoFoto, setSubiendoFoto] = useState(false)
+  const [reordenando, setReordenando] = useState(false)
   const [guardado, setGuardado] = useState(false)
   const [otraMarca, setOtraMarca] = useState(false)
   const [otroColor, setOtroColor] = useState(false)
@@ -159,39 +170,75 @@ export default function AdminPublicacionFormPage() {
     const archivos = Array.from(e.target.files || [])
     if (!archivos.length) return
 
+    // Cada archivo rechazado se informa como "nombre: motivo" y no frena a los demás.
+    const rechazos = []
+    const validos = []
+    for (const archivo of archivos) {
+      const motivo = motivoRechazo(archivo)
+      if (motivo) rechazos.push(`${archivo.name}: ${motivo}`)
+      else validos.push(archivo)
+    }
+
     const actuales = publicacion?.fotos?.length ?? 0
     const restantes = Math.max(MAX_FOTOS - actuales, 0)
-    const aSubir = archivos.slice(0, restantes)
+    const aSubir = validos.slice(0, restantes)
+    for (const archivo of validos.slice(restantes)) {
+      rechazos.push(`${archivo.name}: superaste el máximo de ${MAX_FOTOS} fotos por auto`)
+    }
 
+    setError(rechazos.join('\n'))
     if (aSubir.length === 0) {
-      setError(`Ya llegaste al máximo de ${MAX_FOTOS} fotos por auto.`)
       e.target.value = ''
       return
     }
-    setError(
-      aSubir.length < archivos.length
-        ? `El máximo es ${MAX_FOTOS} fotos por auto — se subieron ${aSubir.length}.`
-        : ''
-    )
 
     setSubiendoFoto(true)
     try {
       let actual = publicacion
       for (const archivo of aSubir) {
-        const formData = new FormData()
-        formData.append('archivo', archivo)
-        const { data } = await api.post(`/publicaciones/${actual.id}/fotos`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
-        actual = data
-        setPublicacion(data)
+        try {
+          const formData = new FormData()
+          formData.append('archivo', archivo)
+          const { data } = await api.post(`/publicaciones/${actual.id}/fotos`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          })
+          actual = data
+          setPublicacion(data)
+        } catch (err) {
+          rechazos.push(`${archivo.name}: ${mensajeDeError(err, 'no se pudo subir')}`)
+        }
       }
-    } catch {
-      setError('No se pudo subir alguna de las fotos.')
+      setError(rechazos.join('\n'))
     } finally {
       setSubiendoFoto(false)
       e.target.value = ''
     }
+  }
+
+  const guardarOrden = async (fotoIds) => {
+    setReordenando(true)
+    setError('')
+    try {
+      const { data } = await api.put(`/publicaciones/${publicacion.id}/fotos/orden`, { fotoIds })
+      setPublicacion(data)
+    } catch (err) {
+      setError(mensajeDeError(err, 'No se pudo cambiar el orden de las fotos.'))
+    } finally {
+      setReordenando(false)
+    }
+  }
+
+  const moverFoto = (indice, delta) => {
+    const ids = (publicacion.fotos ?? []).map((f) => f.id)
+    const destino = indice + delta
+    if (destino < 0 || destino >= ids.length) return
+    ;[ids[indice], ids[destino]] = [ids[destino], ids[indice]]
+    guardarOrden(ids)
+  }
+
+  const hacerPortada = (fotoId) => {
+    const ids = (publicacion.fotos ?? []).map((f) => f.id)
+    guardarOrden([fotoId, ...ids.filter((fid) => fid !== fotoId)])
   }
 
   const eliminarFoto = async (fotoId) => {
@@ -228,9 +275,12 @@ export default function AdminPublicacionFormPage() {
               subiendoFoto={subiendoFoto}
               onSubir={subirFotos}
               onEliminar={eliminarFoto}
+              onMover={moverFoto}
+              onHacerPortada={hacerPortada}
+              reordenando={reordenando}
               max={MAX_FOTOS}
             />
-            {error && <p className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
+            {error && <p className="mt-4 whitespace-pre-line text-sm font-semibold text-red-600">{error}</p>}
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -422,7 +472,7 @@ export default function AdminPublicacionFormPage() {
             </label>
           </Seccion>
 
-          {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+          {error && <p className="whitespace-pre-line text-sm font-semibold text-red-600">{error}</p>}
           {guardado && !error && <p className="text-sm font-semibold text-emerald-600">Cambios guardados.</p>}
 
           <button
@@ -436,7 +486,16 @@ export default function AdminPublicacionFormPage() {
 
         {esEdicion && publicacion && (
           <Seccion titulo="Fotos">
-            <FotosGrid fotos={publicacion.fotos} subiendoFoto={subiendoFoto} onSubir={subirFotos} onEliminar={eliminarFoto} max={MAX_FOTOS} />
+            <FotosGrid
+              fotos={publicacion.fotos}
+              subiendoFoto={subiendoFoto}
+              onSubir={subirFotos}
+              onEliminar={eliminarFoto}
+              onMover={moverFoto}
+              onHacerPortada={hacerPortada}
+              reordenando={reordenando}
+              max={MAX_FOTOS}
+            />
           </Seccion>
         )}
       </div>
@@ -444,34 +503,79 @@ export default function AdminPublicacionFormPage() {
   )
 }
 
-function FotosGrid({ fotos, subiendoFoto, onSubir, onEliminar, max }) {
+function FotosGrid({ fotos, subiendoFoto, onSubir, onEliminar, onMover, onHacerPortada, reordenando, max }) {
   const cantidad = fotos?.length ?? 0
   const llegoAlMaximo = cantidad >= max
+  const botonFoto = 'rounded-full bg-navy/80 p-1.5 text-white transition hover:bg-bronze disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-navy/80'
 
   return (
     <div>
-      <p className="mb-3 text-xs font-semibold text-slate-400">
+      <p className="mb-1 text-xs font-semibold text-slate-400">
         {cantidad}/{max} fotos {llegoAlMaximo && '— llegaste al máximo por auto'}
       </p>
+      {cantidad > 1 && (
+        <p className="mb-3 text-xs text-slate-400">La primera foto es la portada. Usá las flechas para ordenarlas.</p>
+      )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {fotos?.map((foto) => (
+        {fotos?.map((foto, indice) => (
           <div key={foto.id} className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
             <img src={foto.url} alt="" className="h-full w-full object-cover" />
-            <button
-              type="button"
-              onClick={() => onEliminar(foto.id)}
-              aria-label="Eliminar foto"
-              className="absolute right-1.5 top-1.5 rounded-full bg-navy/80 p-1.5 text-white opacity-0 transition group-hover:opacity-100"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            {indice === 0 && (
+              <span className="absolute left-1.5 top-1.5 rounded-full bg-bronze px-2 py-0.5 text-[11px] font-bold text-white">
+                Portada
+              </span>
+            )}
+            {/* Visible siempre en pantallas táctiles; en escritorio aparece al pasar el mouse o al enfocar un botón */}
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/50 to-transparent p-1.5 opacity-100 transition sm:opacity-0 sm:focus-within:opacity-100 sm:group-hover:opacity-100">
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => onMover(indice, -1)}
+                  disabled={reordenando || indice === 0}
+                  aria-label="Mover foto hacia la izquierda"
+                  className={botonFoto}
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onMover(indice, 1)}
+                  disabled={reordenando || indice === cantidad - 1}
+                  aria-label="Mover foto hacia la derecha"
+                  className={botonFoto}
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+                {indice > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onHacerPortada(foto.id)}
+                    disabled={reordenando}
+                    aria-label="Hacer portada"
+                    title="Hacer portada"
+                    className={botonFoto}
+                  >
+                    <Star className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => onEliminar(foto.id)}
+                disabled={reordenando}
+                aria-label="Eliminar foto"
+                className={botonFoto}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         ))}
         {!llegoAlMaximo && (
           <label className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 text-slate-400 transition hover:border-bronze hover:text-bronze">
             {subiendoFoto ? <Loader2 className="h-6 w-6 animate-spin" /> : <ImagePlus className="h-6 w-6" />}
             <span className="text-xs font-semibold">{subiendoFoto ? 'Subiendo...' : 'Agregar fotos'}</span>
-            <input type="file" accept="image/*" multiple onChange={onSubir} className="hidden" disabled={subiendoFoto} />
+            <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={onSubir} className="hidden" disabled={subiendoFoto} />
           </label>
         )}
       </div>
