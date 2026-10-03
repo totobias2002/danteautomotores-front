@@ -6,8 +6,13 @@ export function mensajeDeError(err, fallback) {
   if (err?.response) {
     if (typeof data?.error === 'string' && data.error.trim() !== '') {
       const campos = data.campos
-      if (campos && typeof campos === 'object' && Object.keys(campos).length > 0) {
-        return `${data.error} (${Object.keys(campos).join(', ')})`
+      // Los mensajes por campo ya vienen en español desde el backend; los nombres de las propiedades Java
+      // (agenciaId, telefonoContacto) no le dicen nada al usuario, así que se muestran solo los mensajes.
+      if (campos && typeof campos === 'object') {
+        const mensajes = [...new Set(Object.values(campos))].filter((m) => typeof m === 'string' && m.trim() !== '')
+        if (mensajes.length > 0) {
+          return mensajes.map((m) => m.trim().replace(/\.$/, '')).join('. ') + '.'
+        }
       }
       return data.error
     }
