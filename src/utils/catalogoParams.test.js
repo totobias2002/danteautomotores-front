@@ -101,3 +101,88 @@ test('bandasDePrecio con un solo precio da una banda y sin rango da ninguna', ()
   assert.deepEqual(bandasDePrecio(null, null), [])
   assert.deepEqual(bandasDePrecio(undefined, 5), [])
 })
+
+test('leerFiltros descarta tipo, zona, transmision y estado que no son claves conocidas', () => {
+  const filtros = leerFiltros(
+    new URLSearchParams('tipo=SUV&tipo=NAVE&zona=norte&zona=CABA&transmision=automatica&transmision=MANUAL&estado=roto&estado=VENDIDO'),
+  )
+  assert.deepEqual(filtros.tipo, ['SUV'])
+  assert.deepEqual(filtros.zona, ['CABA'])
+  assert.deepEqual(filtros.transmision, ['MANUAL'])
+  assert.deepEqual(filtros.estado, ['VENDIDO'])
+})
+
+test('leerFiltros no acepta claves heredadas del prototipo como valores de enum', () => {
+  const filtros = leerFiltros(
+    new URLSearchParams('tipo=constructor&tipo=toString&zona=__proto__&estado=hasOwnProperty&transmision=valueOf'),
+  )
+  assert.deepEqual(filtros.tipo, [])
+  assert.deepEqual(filtros.zona, [])
+  assert.deepEqual(filtros.estado, [])
+  assert.deepEqual(filtros.transmision, [])
+})
+
+test('leerFiltros descarta escalares numericos invalidos o fuera del rango de un int de Java', () => {
+  const filtros = leerFiltros(
+    new URLSearchParams('anioMin=abc&anioMax=20x0&kmMax=-5&precioMin=1e6&precioMax=15.000.000'),
+  )
+  assert.equal(filtros.anioMin, '')
+  assert.equal(filtros.anioMax, '')
+  assert.equal(filtros.kmMax, '')
+  assert.equal(filtros.precioMin, '')
+  assert.equal(filtros.precioMax, '')
+  assert.equal(leerFiltros(new URLSearchParams('kmMax=99999999999')).kmMax, '')
+  assert.equal(leerFiltros(new URLSearchParams('kmMax=2147483647')).kmMax, '2147483647')
+  assert.equal(leerFiltros(new URLSearchParams('kmMax=2147483648')).kmMax, '')
+})
+
+test('leerFiltros conserva los escalares numericos validos y recorta espacios', () => {
+  const filtros = leerFiltros(
+    new URLSearchParams('anioMin=2018&anioMax=%202022%20&kmMax=50000&precioMin=17200000.5&precioMax=20000000'),
+  )
+  assert.equal(filtros.anioMin, '2018')
+  assert.equal(filtros.anioMax, '2022')
+  assert.equal(filtros.kmMax, '50000')
+  assert.equal(filtros.precioMin, '17200000.5')
+  assert.equal(filtros.precioMax, '20000000')
+})
+
+test('leerFiltros acepta ofertas solo si es exactamente true', () => {
+  assert.equal(leerFiltros(new URLSearchParams('ofertas=true')).ofertas, 'true')
+  for (const crudo of ['si', '1', 'TRUE', 'false']) {
+    assert.equal(leerFiltros(new URLSearchParams(`ofertas=${crudo}`)).ofertas, '', `ofertas=${crudo}`)
+  }
+})
+
+test('leerFiltros conserva el texto libre y paramsParaApi no manda lo descartado', () => {
+  const libre = leerFiltros(
+    new URLSearchParams('marca=Marca+Rara&modelo=X&color=Verde+agua&busqueda=lo+que+sea&orden=desconocido'),
+  )
+  assert.deepEqual(libre.marca, ['Marca Rara'])
+  assert.deepEqual(libre.modelo, ['X'])
+  assert.deepEqual(libre.color, ['Verde agua'])
+  assert.equal(libre.busqueda, 'lo que sea')
+  assert.equal(libre.orden, 'desconocido')
+
+  const params = paramsParaApi(leerFiltros(new URLSearchParams('tipo=NAVE&anioMin=abc&ofertas=si&marca=Fiat')))
+  assert.equal(params.toString(), 'marca=Fiat&pagina=1')
+})
+
+test('bandasDePrecio redondea las puntas hacia afuera para incluir al auto mas barato y al mas caro', () => {
+  const bandas = bandasDePrecio(17200000.5, 47500000.4)
+  assert.equal(bandas.length, 4)
+  assert.equal(bandas[0].desde, 17200000)
+  assert.equal(bandas[3].hasta, 47500001)
+  for (let i = 1; i < bandas.length; i++) assert.equal(bandas[i].desde, bandas[i - 1].hasta)
+  bandas.forEach((b) => {
+    assert.ok(Number.isInteger(b.desde) && Number.isInteger(b.hasta))
+    assert.ok(b.hasta > b.desde)
+  })
+  assert.ok(17200000.5 >= bandas[0].desde && 17200000.5 <= bandas[0].hasta)
+  assert.ok(47500000.4 >= bandas[3].desde && 47500000.4 <= bandas[3].hasta)
+})
+
+test('bandasDePrecio con un solo precio con centavos da una banda que lo incluye', () => {
+  assert.deepEqual(bandasDePrecio(9000000.5, 9000000.5), [{ desde: 9000000, hasta: 9000001 }])
+  assert.deepEqual(bandasDePrecio(9000000, 9000000), [{ desde: 9000000, hasta: 9000000 }])
+})
