@@ -17,6 +17,21 @@ export const TIPO_CARROCERIA = {
   FAMILIAR: 'Familiar',
 }
 
+export const COMBUSTIBLE = {
+  NAFTA: 'Nafta',
+  DIESEL: 'Diésel',
+  GNC: 'GNC',
+  HIBRIDO: 'Híbrido',
+  ELECTRICO: 'Eléctrico',
+}
+
+export const CONDICION = {
+  EXCELENTE: 'Excelente',
+  MUY_BUENO: 'Muy bueno',
+  BUENO: 'Bueno',
+  REGULAR: 'Regular',
+}
+
 export const ZONA = {
   CABA: 'CABA',
   ZONA_NORTE: 'Zona Norte',
