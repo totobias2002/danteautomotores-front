@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Check, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import IconoGoogle from '../components/IconoGoogle.jsx'
@@ -15,6 +15,11 @@ export default function LoginPage() {
   const [avisoGoogle, setAvisoGoogle] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Solo se vuelve a rutas internas de la app (nunca a una URL externa ni a "//host").
+  const origen = location.state?.from
+  const destino = typeof origen === 'string' && origen.startsWith('/') && !origen.startsWith('//') ? origen : '/'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -22,7 +27,7 @@ export default function LoginPage() {
     setCargando(true)
     try {
       await login(email, password)
-      navigate('/')
+      navigate(destino, { replace: true })
     } catch {
       setError('Email o contraseña incorrectos')
     } finally {
@@ -67,6 +72,12 @@ export default function LoginPage() {
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-bronze">Ingresar</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-navy-dark">Bienvenido de nuevo</h1>
             <p className="mt-2 text-base text-slate-500">Ingresá con tu email para ver tus favoritos y tus consultas.</p>
+
+            {location.state?.sesionVencida && (
+              <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+                Tu sesión venció. Iniciá sesión de nuevo para seguir donde estabas.
+              </p>
+            )}
 
             <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
               <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-5 py-4 transition focus-within:border-bronze">

@@ -1,13 +1,29 @@
-import { createContext, useContext, useState } from 'react'
-import api from '../services/api.js'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api, { registrarManejadorSesionVencida } from '../services/api.js'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate()
   const [usuario, setUsuario] = useState(() => {
     const guardado = localStorage.getItem('usuario')
     return guardado ? JSON.parse(guardado) : null
   })
+
+  // Sesión vencida (401 fuera de /auth/*): se limpia la sesión y se lleva a /login,
+  // recordando la página de origen para volver después de ingresar.
+  useEffect(() => {
+    registrarManejadorSesionVencida(() => {
+      logout()
+      if (window.location.pathname === '/login') return
+      navigate('/login', {
+        replace: true,
+        state: { from: window.location.pathname + window.location.search, sesionVencida: true },
+      })
+    })
+    return () => registrarManejadorSesionVencida(null)
+  }, [navigate])
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
