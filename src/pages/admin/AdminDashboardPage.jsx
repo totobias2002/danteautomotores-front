@@ -389,6 +389,7 @@ export default function AdminDashboardPage() {
               <Search className="h-4 w-4 shrink-0 text-slate-400" />
               <input
                 type="text"
+                aria-label="Buscar por marca o modelo"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar por marca o modelo"
@@ -436,6 +437,7 @@ export default function AdminDashboardPage() {
                       <Star className="h-4 w-4" fill={p.destacado ? 'currentColor' : 'none'} />
                     </button>
                     <select
+                      aria-label={`Estado de ${p.marca} ${p.modelo}`}
                       value={p.estado}
                       onChange={(e) => cambiarEstado(p.id, e.target.value)}
                       className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-semibold text-navy outline-none focus:border-bronze"
