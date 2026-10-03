@@ -7,6 +7,7 @@ import LoginPage from '../pages/LoginPage.jsx'
 import RegistroPage from '../pages/RegistroPage.jsx'
 import FavoritosPage from '../pages/FavoritosPage.jsx'
 import CreditosPage from '../pages/CreditosPage.jsx'
+import NoEncontradaPage from '../pages/NoEncontradaPage.jsx'
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx'
 import AdminPublicacionFormPage from '../pages/admin/AdminPublicacionFormPage.jsx'
 import ProtectedRoute from '../components/ProtectedRoute.jsx'
@@ -53,6 +54,7 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NoEncontradaPage />} />
     </Routes>
   )
 }
