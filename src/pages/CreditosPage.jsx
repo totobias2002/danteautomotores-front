@@ -22,6 +22,10 @@ export default function CreditosPage() {
         Las fotos de los autos de demostración son de Wikimedia Commons y se publican bajo licencias Creative Commons,
         que exigen mencionar al autor y la licencia. Acá figuran todas.
       </p>
+      <p className="mt-3 text-sm text-slate-500">
+        Las imágenes se muestran modificadas: fueron recortadas, redimensionadas y comprimidas para su visualización en
+        este sitio. Los originales, sin cambios, están en el enlace «Ver original» de cada foto.
+      </p>
 
       <div className="mt-10 flex flex-col gap-8">
         {grupos.map(([auto, fotos]) => (
