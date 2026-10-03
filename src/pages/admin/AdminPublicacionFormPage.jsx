@@ -86,10 +86,12 @@ const publicacionAForm = (p) => ({
   precio: p.precio != null ? String(Math.round(Number(p.precio))) : '',
   moneda: p.moneda ?? 'ARS',
   kilometraje: p.kilometraje != null ? String(p.kilometraje) : '',
-  transmision: p.transmision ?? 'MANUAL',
-  combustible: p.combustible ?? 'NAFTA',
+  // Los tres son opcionales en el backend: un null se conserva como '' ("Sin especificar") y no se reemplaza por
+  // un valor inventado que el próximo guardado escribiría en la base.
+  transmision: p.transmision ?? '',
+  combustible: p.combustible ?? '',
   color: p.color ?? '',
-  condicion: p.condicion ?? 'BUENO',
+  condicion: p.condicion ?? '',
   descripcion: p.descripcion ?? '',
 })
 
@@ -153,6 +155,9 @@ export default function AdminPublicacionFormPage() {
       anio: Number(form.anio),
       precio: Number(form.precio),
       kilometraje: form.kilometraje ? Number(form.kilometraje) : null,
+      transmision: form.transmision || null,
+      combustible: form.combustible || null,
+      condicion: form.condicion || null,
     }
     try {
       if (esEdicion) {
@@ -420,6 +425,7 @@ export default function AdminPublicacionFormPage() {
               <Input label="Año" type="number" required {...campo('anio')} />
               <Input label="Kilometraje" type="number" {...campo('kilometraje')} />
               <Select label="Transmisión" {...campo('transmision')}>
+                <option value="">Sin especificar</option>
                 {TRANSMISIONES.map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
@@ -427,6 +433,7 @@ export default function AdminPublicacionFormPage() {
                 ))}
               </Select>
               <Select label="Combustible" {...campo('combustible')}>
+                <option value="">Sin especificar</option>
                 {COMBUSTIBLES.map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
@@ -465,6 +472,7 @@ export default function AdminPublicacionFormPage() {
               </div>
 
               <Select label="Condición" {...campo('condicion')}>
+                <option value="">Sin especificar</option>
                 {CONDICIONES.map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
