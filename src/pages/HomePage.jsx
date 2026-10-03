@@ -6,7 +6,7 @@ import PublicacionCard from '../components/PublicacionCard.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
 import SeccionFinanciamiento from '../components/SeccionFinanciamiento.jsx'
 import LogoMarca, { LOGOS } from '../components/LogoMarca.jsx'
-import { BANDAS_PRECIO, catalogoMock } from '../mocks/catalogoMock.js'
+import { bandasDePrecio } from '../utils/catalogoParams.js'
 import { mensajeDeError } from '../utils/errores.js'
 
 const brands = ['Toyota', 'Volkswagen', 'Jeep', 'Chevrolet', 'Ford', 'Fiat', 'Peugeot', 'Renault', 'BMW']
@@ -17,30 +17,53 @@ const MARCAS_ACCESO_RAPIDO = ['Toyota', 'Volkswagen', 'Jeep', 'Ford', 'Fiat', 'P
 
 const formatoNumero = (valor) => new Intl.NumberFormat('es-AR').format(valor)
 
-const etiquetaBanda = (banda, i) => {
+const etiquetaBanda = (banda, i, cantidad) => {
   if (i === 0) return `Hasta $${formatoNumero(banda.hasta)}`
-  if (i === BANDAS_PRECIO.length - 1) return `Más de $${formatoNumero(banda.desde)}`
+  if (i === cantidad - 1) return `Más de $${formatoNumero(banda.desde)}`
   return `$${formatoNumero(banda.desde)} - $${formatoNumero(banda.hasta)}`
 }
-
-// Para el autocompletado del buscador del hero: todas las marcas del catálogo
-// más cada combinación "marca modelo", para que sugiera tanto si escribís una
-// marca como si escribís (parte de) un modelo puntual.
-const SUGERENCIAS_BASE = [...new Set([...brands, ...catalogoMock.map((a) => `${a.marca} ${a.modelo}`)])]
 
 export default function HomePage() {
   const navigate = useNavigate()
   const [publicaciones, setPublicaciones] = useState([])
+  const [facetas, setFacetas] = useState(null)
   const [filtros, setFiltros] = useState({ marca: '' })
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false)
 
+  // Para el autocompletado del buscador del hero: las marcas del catálogo real más cada combinación
+  // "marca modelo", para que sugiera tanto si escribís una marca como si escribís (parte de) un modelo puntual.
+  const sugerenciasBase = useMemo(
+    () => [
+      ...new Set([
+        ...(facetas?.marcas ?? []).map((m) => m.valor),
+        ...(facetas?.modelos ?? []).map((m) => `${m.marca} ${m.valor}`),
+      ]),
+    ],
+    [facetas]
+  )
+
+  // Los accesos por presupuesto salen del rango de precios real; sin facetas o sin autos no se muestran.
+  const bandas = useMemo(
+    () => (facetas?.precio ? bandasDePrecio(facetas.precio.min, facetas.precio.max) : []),
+    [facetas]
+  )
+
   const sugerencias = useMemo(() => {
     const q = filtros.marca.trim().toLowerCase()
     if (!q) return []
-    return SUGERENCIAS_BASE.filter((s) => s.toLowerCase().includes(q)).slice(0, 6)
-  }, [filtros.marca])
+    return sugerenciasBase.filter((s) => s.toLowerCase().includes(q)).slice(0, 6)
+  }, [filtros.marca, sugerenciasBase])
+
+  // Son un acceso rápido: si fallan no se muestra ningún error, solo no hay sugerencias ni presupuesto.
+  useEffect(() => {
+    const controller = new AbortController()
+    api.get('/publicaciones/facetas', { signal: controller.signal })
+      .then((res) => setFacetas(res.data))
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
 
   // Los destacados los marca el admin y vienen del back sin token (los vendidos nunca aparecen acá).
   useEffect(() => {
@@ -171,18 +194,22 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por presupuesto</p>
-              <div className="flex flex-wrap gap-2">
-                {BANDAS_PRECIO.map((banda, i) => (
-                  <Link
-                    key={i}
-                    to={`/autos?precioMin=${banda.desde}&precioMax=${banda.hasta}`}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-navy-dark transition hover:-translate-y-0.5 hover:border-bronze hover:text-bronze hover:shadow-md"
-                  >
-                    {etiquetaBanda(banda, i)}
-                  </Link>
-                ))}
-              </div>
+              {bandas.length > 1 && (
+                <>
+                  <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por presupuesto</p>
+                  <div className="flex flex-wrap gap-2">
+                    {bandas.map((banda, i) => (
+                      <Link
+                        key={i}
+                        to={`/autos?precioMin=${banda.desde}&precioMax=${banda.hasta}`}
+                        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-navy-dark transition hover:-translate-y-0.5 hover:border-bronze hover:text-bronze hover:shadow-md"
+                      >
+                        {etiquetaBanda(banda, i, bandas.length)}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
