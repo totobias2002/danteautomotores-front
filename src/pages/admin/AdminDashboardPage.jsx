@@ -28,9 +28,16 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState('')
   const [errorEdicion, setErrorEdicion] = useState('')
   const [errorListado, setErrorListado] = useState('')
+  const [errorAgencias, setErrorAgencias] = useState('')
+  const [agenciaAEliminar, setAgenciaAEliminar] = useState(null)
 
   const cargar = () => {
-    api.get('/agencias').then((res) => setAgencias(res.data)).catch(() => {})
+    api.get('/agencias')
+      .then((res) => {
+        setAgencias(res.data)
+        setErrorAgencias('')
+      })
+      .catch((err) => setErrorAgencias(mensajeDeError(err, 'No se pudieron cargar las agencias.')))
     api.get('/admin/publicaciones')
       .then((res) => {
         setPublicaciones(res.data)
@@ -51,14 +58,21 @@ export default function AdminDashboardPage() {
       setNuevaAgencia(AGENCIA_INICIAL)
       setMostrarFormAgencia(false)
       cargar()
-    } catch {
-      setError('No se pudo crear la agencia')
+    } catch (err) {
+      setError(mensajeDeError(err, 'No se pudo crear la agencia.'))
     }
   }
 
+  // El backend rechaza con 400 la baja de una agencia que todavía tiene autos; el mensaje se muestra arriba de la lista.
   const eliminarAgencia = async (id) => {
-    await api.delete(`/agencias/${id}`)
-    cargar()
+    setErrorAgencias('')
+    setAgenciaAEliminar(null)
+    try {
+      await api.delete(`/agencias/${id}`)
+      cargar()
+    } catch (err) {
+      setErrorAgencias(mensajeDeError(err, 'No se pudo eliminar la agencia.'))
+    }
   }
 
   const comenzarEdicionAgencia = (a) => {
@@ -83,8 +97,8 @@ export default function AdminDashboardPage() {
       await api.put(`/agencias/${id}`, datos)
       setAgenciaEditando(null)
       cargar()
-    } catch {
-      setErrorEdicion('No se pudieron guardar los cambios.')
+    } catch (err) {
+      setErrorEdicion(mensajeDeError(err, 'No se pudieron guardar los cambios.'))
     }
   }
 
@@ -141,6 +155,8 @@ export default function AdminDashboardPage() {
               </button>
             </form>
           )}
+
+          {errorAgencias && <p className="mb-3 text-sm font-semibold text-red-600">{errorAgencias}</p>}
 
           {agencias.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
@@ -223,14 +239,34 @@ export default function AdminDashboardPage() {
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => eliminarAgencia(a.id)}
-                        aria-label="Eliminar agencia"
-                        className="text-slate-400 transition hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {agenciaAEliminar === a.id ? (
+                        <span className="flex items-center gap-2 text-xs font-bold">
+                          <span className="text-red-600">¿Eliminar?</span>
+                          <button
+                            type="button"
+                            onClick={() => eliminarAgencia(a.id)}
+                            className="rounded-lg bg-red-600 px-2.5 py-1 text-white transition hover:bg-red-700"
+                          >
+                            Confirmar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAgenciaAEliminar(null)}
+                            className="rounded-lg border border-slate-200 px-2.5 py-1 text-navy-dark transition hover:border-bronze"
+                          >
+                            Cancelar
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setAgenciaAEliminar(a.id)}
+                          aria-label="Eliminar agencia"
+                          className="text-slate-400 transition hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </li>
                 )

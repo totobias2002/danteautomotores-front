@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ImagePlus, Loader2, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
+import { mensajeDeError } from '../../utils/errores.js'
 
 const TRANSMISIONES = [
   { value: 'MANUAL', label: 'Manual' },
@@ -95,7 +96,9 @@ export default function AdminPublicacionFormPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    api.get('/agencias').then((res) => setAgencias(res.data)).catch(() => {})
+    api.get('/agencias')
+      .then((res) => setAgencias(res.data))
+      .catch((err) => setError(mensajeDeError(err, 'No se pudieron cargar las agencias.')))
   }, [])
 
   useEffect(() => {
@@ -109,7 +112,7 @@ export default function AdminPublicacionFormPage() {
         if (datos.marca && !MARCAS.includes(datos.marca)) setOtraMarca(true)
         if (datos.color && !COLORES.includes(datos.color)) setOtroColor(true)
       })
-      .catch(() => setError('No se pudo cargar la publicación.'))
+      .catch((err) => setError(mensajeDeError(err, 'No se pudo cargar la publicación.')))
       .finally(() => setCargandoInicial(false))
   }, [id, esEdicion])
 
@@ -145,12 +148,8 @@ export default function AdminPublicacionFormPage() {
         const { data } = await api.post('/publicaciones', payload)
         setPublicacion(data)
       }
-    } catch {
-      setError(
-        esEdicion
-          ? 'No se pudieron guardar los cambios. Revisá que los datos obligatorios estén completos.'
-          : 'No se pudo crear la publicación. Revisá que los datos obligatorios estén completos.'
-      )
+    } catch (err) {
+      setError(mensajeDeError(err, esEdicion ? 'No se pudieron guardar los cambios.' : 'No se pudo crear la publicación.'))
     } finally {
       setCargando(false)
     }
