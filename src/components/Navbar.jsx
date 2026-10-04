@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 import Logo from './Logo.jsx'
 
 export default function Navbar() {
@@ -16,14 +15,7 @@ export default function Navbar() {
 
         <div className="hidden flex-1 items-center justify-center gap-7 text-sm font-bold text-navy-dark/80 md:flex">
           <Link to="/autos" className="transition hover:text-bronze">Comprar tu auto</Link>
-          <a
-            href={armarLinkWhatsapp('Hola, quiero vender mi auto.')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition hover:text-bronze"
-          >
-            Vender tu auto
-          </a>
+          <Link to="/vender" className="transition hover:text-bronze">Vender tu auto</Link>
           <span className="cursor-default select-none text-navy-dark/40">Nuestras sucursales</span>
           <span className="cursor-default select-none text-navy-dark/40">Nosotros</span>
           {esAdmin && (
