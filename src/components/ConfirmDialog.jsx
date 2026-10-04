@@ -32,7 +32,7 @@ export default function ConfirmDialog({
     <dialog
       ref={dialogRef}
       onCancel={handleCancel}
-      className="w-[min(92vw,28rem)] rounded-2xl p-0 backdrop:bg-navy/60"
+      className="m-auto w-[min(92vw,28rem)] rounded-2xl p-0 backdrop:bg-navy/60"
     >
       <div className="p-6">
         <h2 className="font-heading text-xl text-navy-dark">{titulo}</h2>
