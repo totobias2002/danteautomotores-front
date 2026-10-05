@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api, { registrarManejadorSesionVencida } from '../services/api.js'
+import api, { registrarManejadorCuentaNoVerificada, registrarManejadorSesionVencida } from '../services/api.js'
 
 const AuthContext = createContext(null)
 
@@ -17,6 +17,37 @@ export function AuthProvider({ children }) {
       return null
     }
   })
+  const refrescandoPorGate = useRef(false)
+
+  // Guarda en el estado y en localStorage solo lo no sensible. Nunca se guarda el DNI ni el teléfono:
+  // solo qué datos faltan. Una sesión anterior a la Fase 3 no trae estos campos.
+  const guardarUsuario = (data) => {
+    const usuarioData = {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      email: data.email,
+      rol: data.rol,
+      emailConfirmado: data.emailConfirmado,
+      cuentaVerificada: data.cuentaVerificada,
+      faltantes: data.faltantes,
+    }
+    localStorage.setItem('usuario', JSON.stringify(usuarioData))
+    setUsuario(usuarioData)
+    return usuarioData
+  }
+
+  const guardarSesion = (data) => {
+    localStorage.setItem('token', data.token)
+    return guardarUsuario(data)
+  }
+
+  // Pide la cuenta al servidor y actualiza la sesión. Devuelve el perfil completo (con DNI y teléfono)
+  // para que la pantalla que lo pidió lo use en su estado, sin guardarlo en el navegador.
+  const refrescarUsuario = async () => {
+    const { data } = await api.get('/usuarios/me')
+    guardarUsuario(data)
+    return data
+  }
 
   // Sesión vencida (401 fuera de /auth/*): se limpia la sesión y se lleva a /login,
   // recordando la página de origen para volver después de ingresar.
@@ -32,30 +63,40 @@ export function AuthProvider({ children }) {
     return () => registrarManejadorSesionVencida(null)
   }, [navigate])
 
+  // El back rechazó una acción por cuenta sin verificar: se refresca la cuenta y se lleva a Completá tus datos.
+  useEffect(() => {
+    registrarManejadorCuentaNoVerificada(async () => {
+      if (refrescandoPorGate.current) return
+      refrescandoPorGate.current = true
+      try {
+        await refrescarUsuario().catch(() => {})
+        if (window.location.pathname === '/completar-datos') return
+        navigate('/completar-datos', {
+          state: { from: window.location.pathname + window.location.search },
+        })
+      } finally {
+        refrescandoPorGate.current = false
+      }
+    })
+    return () => registrarManejadorCuentaNoVerificada(null)
+  }, [navigate])
+
+  // Una sesión iniciada antes de la fase no tiene la lista de faltantes: se rehidrata desde el servidor.
+  // Si el token venció, el interceptor del 401 ya cierra la sesión.
+  useEffect(() => {
+    if (localStorage.getItem('token') && usuario && !Array.isArray(usuario.faltantes)) {
+      refrescarUsuario().catch(() => {})
+    }
+  }, [])
+
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
-    guardarSesion(data)
+    return guardarSesion(data)
   }
 
   const registrar = async (nombre, email, password, telefono) => {
     const { data } = await api.post('/auth/registro', { nombre, email, password, telefono })
     guardarSesion(data)
-  }
-
-  const guardarSesion = (data) => {
-    localStorage.setItem('token', data.token)
-    // Nunca se guarda el DNI ni el teléfono: solo qué datos faltan. Una sesión anterior a la Fase 3 no trae estos campos.
-    const usuarioData = {
-      nombre: data.nombre,
-      apellido: data.apellido,
-      email: data.email,
-      rol: data.rol,
-      emailConfirmado: data.emailConfirmado,
-      cuentaVerificada: data.cuentaVerificada,
-      faltantes: data.faltantes,
-    }
-    localStorage.setItem('usuario', JSON.stringify(usuarioData))
-    setUsuario(usuarioData)
   }
 
   const logout = () => {
@@ -67,7 +108,7 @@ export function AuthProvider({ children }) {
   const esAdmin = usuario?.rol === 'ADMIN'
 
   return (
-    <AuthContext.Provider value={{ usuario, esAdmin, login, registrar, logout }}>
+    <AuthContext.Provider value={{ usuario, esAdmin, login, registrar, logout, guardarSesion, refrescarUsuario }}>
       {children}
     </AuthContext.Provider>
   )

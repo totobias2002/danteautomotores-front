@@ -11,6 +11,14 @@ export const registrarManejadorSesionVencida = (fn) => {
   manejadorSesionVencida = fn
 }
 
+// Lo registra AuthProvider: refresca la cuenta y lleva a /completar-datos cuando el back
+// rechaza una acción con 403 CUENTA_NO_VERIFICADA (el servidor es la autoridad aunque el front crea que la cuenta está completa).
+let manejadorCuentaNoVerificada = null
+
+export const registrarManejadorCuentaNoVerificada = (fn) => {
+  manejadorCuentaNoVerificada = fn
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   // Un Bearer viejo no debe viajar al login ni al registro: ahí no hace falta y puede romperlos.
@@ -32,6 +40,9 @@ api.interceptors.response.use(
       localStorage.getItem('token')
     ) {
       manejadorSesionVencida?.()
+    }
+    if (error.response?.status === 403 && error.response?.data?.codigo === 'CUENTA_NO_VERIFICADA') {
+      manejadorCuentaNoVerificada?.()
     }
     return Promise.reject(error)
   },
