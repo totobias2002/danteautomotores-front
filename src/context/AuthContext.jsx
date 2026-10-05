@@ -44,7 +44,16 @@ export function AuthProvider({ children }) {
 
   const guardarSesion = (data) => {
     localStorage.setItem('token', data.token)
-    const usuarioData = { nombre: data.nombre, email: data.email, rol: data.rol }
+    // Nunca se guarda el DNI ni el teléfono: solo qué datos faltan. Una sesión anterior a la Fase 3 no trae estos campos.
+    const usuarioData = {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      email: data.email,
+      rol: data.rol,
+      emailConfirmado: data.emailConfirmado,
+      cuentaVerificada: data.cuentaVerificada,
+      faltantes: data.faltantes,
+    }
     localStorage.setItem('usuario', JSON.stringify(usuarioData))
     setUsuario(usuarioData)
   }
