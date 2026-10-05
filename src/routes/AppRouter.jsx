@@ -9,6 +9,7 @@ import FavoritosPage from '../pages/FavoritosPage.jsx'
 import CreditosPage from '../pages/CreditosPage.jsx'
 import NoEncontradaPage from '../pages/NoEncontradaPage.jsx'
 import VenderPage from '../pages/VenderPage.jsx'
+import CompletarDatosPage from '../pages/CompletarDatosPage.jsx'
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx'
 import AdminSolicitudesVentaPage from '../pages/admin/AdminSolicitudesVentaPage.jsx'
 import AdminPublicacionFormPage from '../pages/admin/AdminPublicacionFormPage.jsx'
@@ -30,6 +31,14 @@ export default function AppRouter() {
         element={
           <ProtectedRoute>
             <FavoritosPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/completar-datos"
+        element={
+          <ProtectedRoute>
+            <CompletarDatosPage />
           </ProtectedRoute>
         }
       />
