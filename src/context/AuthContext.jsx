@@ -94,9 +94,16 @@ export function AuthProvider({ children }) {
     return guardarSesion(data)
   }
 
-  const registrar = async (nombre, email, password, telefono) => {
-    const { data } = await api.post('/auth/registro', { nombre, email, password, telefono })
-    guardarSesion(data)
+  // Recibe {nombre, apellido, email, password, telefono, dni}; el DNI y el teléfono viajan al back y no se guardan.
+  const registrar = async ({ nombre, apellido, email, password, telefono, dni }) => {
+    const { data } = await api.post('/auth/registro', { nombre, apellido, email, password, telefono, dni })
+    return guardarSesion(data)
+  }
+
+  // El front nunca decide la identidad: manda el ID token de Google al back, que lo verifica.
+  const loginConGoogle = async (credential) => {
+    const { data } = await api.post('/auth/google', { credential })
+    return guardarSesion(data)
   }
 
   const logout = () => {
@@ -108,7 +115,7 @@ export function AuthProvider({ children }) {
   const esAdmin = usuario?.rol === 'ADMIN'
 
   return (
-    <AuthContext.Provider value={{ usuario, esAdmin, login, registrar, logout, guardarSesion, refrescarUsuario }}>
+    <AuthContext.Provider value={{ usuario, esAdmin, login, loginConGoogle, registrar, logout, guardarSesion, refrescarUsuario }}>
       {children}
     </AuthContext.Provider>
   )
