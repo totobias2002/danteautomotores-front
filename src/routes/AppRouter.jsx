@@ -16,7 +16,11 @@ import ConfirmarEmailPage from '../pages/ConfirmarEmailPage.jsx'
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx'
 import AdminSolicitudesVentaPage from '../pages/admin/AdminSolicitudesVentaPage.jsx'
 import AdminPublicacionFormPage from '../pages/admin/AdminPublicacionFormPage.jsx'
+import PerfilPage from '../pages/PerfilPage.jsx'
+import MisMensajesPage from '../pages/MisMensajesPage.jsx'
+import PrivacidadPage from '../pages/PrivacidadPage.jsx'
 import ProtectedRoute from '../components/ProtectedRoute.jsx'
+import RutaVerificada from '../components/RutaVerificada.jsx'
 
 export default function AppRouter() {
   return (
@@ -31,7 +35,31 @@ export default function AppRouter() {
       <Route path="/restablecer-contrasena" element={<RestablecerContrasenaPage />} />
       <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
       <Route path="/creditos" element={<CreditosPage />} />
-      <Route path="/vender" element={<VenderPage />} />
+      <Route path="/privacidad" element={<PrivacidadPage />} />
+      <Route
+        path="/vender"
+        element={
+          <RutaVerificada>
+            <VenderPage />
+          </RutaVerificada>
+        }
+      />
+      <Route
+        path="/mensajes"
+        element={
+          <RutaVerificada>
+            <MisMensajesPage />
+          </RutaVerificada>
+        }
+      />
+      <Route
+        path="/perfil"
+        element={
+          <ProtectedRoute>
+            <PerfilPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/favoritos"
         element={
