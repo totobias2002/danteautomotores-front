@@ -88,7 +88,7 @@ export default function ConfirmarEmailPage() {
               <CheckCircle2 className="h-12 w-12 text-green-600" />
               <h1 className="text-3xl font-bold tracking-tight text-navy-dark">¡Listo! Tu mail quedó confirmado.</h1>
               <Link
-                to="/autos"
+                to="/"
                 className="mt-2 rounded-xl bg-bronze px-6 py-3.5 text-base font-bold text-white transition hover:bg-navy"
               >
                 Seguir buscando autos
