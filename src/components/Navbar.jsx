@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Heart } from 'lucide-react'
+import { Heart, MessageSquare, UserRound } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import Logo from './Logo.jsx'
 
@@ -18,6 +18,9 @@ export default function Navbar() {
           <Link to="/vender" className="transition hover:text-bronze">Vender tu auto</Link>
           <span className="cursor-default select-none text-navy-dark/40">Nuestras sucursales</span>
           <span className="cursor-default select-none text-navy-dark/40">Nosotros</span>
+          {usuario && (
+            <Link to="/mensajes" className="transition hover:text-bronze">Mis mensajes</Link>
+          )}
           {esAdmin && (
             <Link to="/admin" className="transition hover:text-bronze">Administración</Link>
           )}

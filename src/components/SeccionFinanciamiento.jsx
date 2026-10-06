@@ -1,7 +1,16 @@
 import { Car, Percent } from 'lucide-react'
+import useExigirCuenta from '../hooks/useExigirCuenta.js'
 import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 
 export default function SeccionFinanciamiento() {
+  const exigir = useExigirCuenta()
+
+  // AUTH-06: cotizar el usado exige cuenta verificada. El cotizador real llega en la Fase 5.
+  const handleCotizarUsado = () =>
+    exigir(() => {
+      window.open(armarLinkWhatsapp('Hola, quiero cotizar mi auto como parte de pago.'), '_blank', 'noopener,noreferrer')
+    })
+
   return (
     <section className="bg-navy-dark py-14 text-white">
       <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-6 md:flex-row md:items-center md:justify-between lg:px-10">
@@ -21,14 +30,13 @@ export default function SeccionFinanciamiento() {
           >
             <Percent className="h-3.5 w-3.5" /> Financiamiento a medida · entrega inmediata
           </a>
-          <a
-            href={armarLinkWhatsapp('Hola, quiero cotizar mi auto como parte de pago.')}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={handleCotizarUsado}
             className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-white/10"
           >
             <Car className="h-3.5 w-3.5" /> Cotizá tu usado
-          </a>
+          </button>
         </div>
       </div>
     </section>

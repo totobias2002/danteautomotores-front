@@ -15,7 +15,10 @@ export default function Footer() {
       </div>
       <div className="mx-auto mt-8 flex max-w-7xl flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-5 text-[10px] text-slate-500">
         <span>© {new Date().getFullYear()} DanteAutomotores. Todos los derechos reservados.</span>
-        <Link to="/creditos" className="transition hover:text-slate-300">Créditos de imágenes</Link>
+        <span className="flex flex-wrap gap-4">
+          <Link to="/privacidad" className="transition hover:text-slate-300">Política de privacidad</Link>
+          <Link to="/creditos" className="transition hover:text-slate-300">Créditos de imágenes</Link>
+        </span>
       </div>
     </footer>
   )
