@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   BadgeCheck,
@@ -23,6 +23,8 @@ import {
 } from 'lucide-react'
 import api from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import useExigirCuenta from '../hooks/useExigirCuenta.js'
+import { destinoDeGate, evaluarAcceso } from '../utils/cuenta.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import { TRANSFORMACION_DETALLE, TRANSFORMACION_MINIATURA, urlMiniatura } from '../utils/cloudinary.js'
 import { mensajeDeError } from '../utils/errores.js'
@@ -55,7 +57,9 @@ function Dato({ icono: Icono, etiqueta, valor }) {
 export default function PublicacionDetallePage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { usuario, esAdmin } = useAuth()
+  const location = useLocation()
+  const { usuario, esAdmin, refrescarUsuario } = useAuth()
+  const exigir = useExigirCuenta()
 
   const [publicacion, setPublicacion] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -67,7 +71,7 @@ export default function PublicacionDetallePage() {
   const [errorFavorito, setErrorFavorito] = useState('')
   const [enlaceCopiado, setEnlaceCopiado] = useState(false)
   const [avisoCuenta, setAvisoCuenta] = useState(false)
-  const [consulta, setConsulta] = useState({ nombreComprador: '', emailComprador: '', telefonoComprador: '', mensaje: '' })
+  const [mensaje, setMensaje] = useState('')
   const [enviado, setEnviado] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [errorConsulta, setErrorConsulta] = useState('')
@@ -155,18 +159,27 @@ export default function PublicacionDetallePage() {
     return { texto: 'Verificado', clase: 'bg-white/90 text-navy', Icono: ShieldCheck }
   }, [publicacion])
 
-  // Las funciones de reserva, financiamiento y cotización de auto van a
-  // necesitar que el usuario tenga una cuenta y el backend conectado. Por
-  // ahora, si no hay sesión iniciada lo mandamos a loguearse/crear cuenta;
-  // si ya tiene sesión, avisamos que la función todavía no está disponible.
-  const requiereCuenta = () => {
-    if (!usuario) {
-      navigate('/login')
-      return
-    }
-    setAvisoCuenta(true)
-    setTimeout(() => setAvisoCuenta(false), 4000)
-  }
+  // Lo quiero, Cotizar y Simulá tu financiamiento exigen cuenta verificada (AUTH-06): sin sesión llevan al login y con
+  // la cuenta incompleta a Completá tus datos, y en ambos casos vuelven a esta ficha. Para una cuenta verificada
+  // conservan el aviso temporal hasta que las Fases 4 (Lo quiero) y 5 (cotizador) conecten el flujo real.
+  const requiereCuenta = () =>
+    exigir(() => {
+      setAvisoCuenta(true)
+      setTimeout(() => setAvisoCuenta(false), 4000)
+    })
+
+  // Al cambiar de auto no queda el mensaje a medio escribir del anterior.
+  useEffect(() => {
+    setMensaje('')
+    setEnviado(false)
+    setErrorConsulta('')
+  }, [id])
+
+  // Una sesión guardada antes de la fase no sabe qué le falta: se pregunta al servidor para decidir qué mostrar.
+  const accesoConsulta = evaluarAcceso(usuario)
+  useEffect(() => {
+    if (accesoConsulta === 'desconocida') refrescarUsuario().catch(() => {})
+  }, [accesoConsulta])
 
   // El corazón solo cambia cuando el backend confirma: guardar con POST, quitar con DELETE. Ante cualquier error
   // queda como estaba y se muestra el motivo. Un 401 no muestra nada: el interceptor de api.js ya cierra la sesión y
@@ -211,7 +224,7 @@ export default function PublicacionDetallePage() {
     setErrorConsulta('')
     setEnviando(true)
     try {
-      await api.post('/consultas', { publicacionId: Number(id), ...consulta })
+      await api.post('/consultas', { publicacionId: Number(id), mensaje })
       setEnviado(true)
     } catch (err) {
       // Si el auto se vendió mientras tanto, el backend responde "Este auto ya se vendió".
@@ -391,40 +404,19 @@ export default function PublicacionDetallePage() {
                 )}
                 {enviado ? (
                   <p className="font-semibold text-bronze">¡Listo! La agencia se va a poner en contacto.</p>
-                ) : (
+                ) : accesoConsulta === 'verificada' ? (
                   <form onSubmit={handleConsultaSubmit} className="grid gap-3 sm:max-w-md">
-                    <input
-                      type="text"
-                      placeholder="Tu nombre"
-                      value={consulta.nombreComprador}
-                      onChange={(e) => setConsulta({ ...consulta, nombreComprador: e.target.value })}
-                      className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-bronze"
-                      required
-                    />
-                    <input
-                      type="email"
-                      placeholder="Tu email"
-                      value={consulta.emailComprador}
-                      onChange={(e) => setConsulta({ ...consulta, emailComprador: e.target.value })}
-                      className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-bronze"
-                      required
-                    />
-                    <input
-                      type="text"
-                      placeholder="Tu teléfono (opcional)"
-                      value={consulta.telefonoComprador}
-                      onChange={(e) => setConsulta({ ...consulta, telefonoComprador: e.target.value })}
-                      className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-bronze"
-                    />
                     <textarea
                       placeholder="Mensaje"
+                      aria-label="Mensaje"
                       rows={3}
-                      value={consulta.mensaje}
-                      onChange={(e) => setConsulta({ ...consulta, mensaje: e.target.value })}
+                      maxLength={2000}
+                      value={mensaje}
+                      onChange={(e) => setMensaje(e.target.value)}
                       className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-bronze"
                       required
                     />
-                    {errorConsulta && <p className="text-sm font-semibold text-red-600">{errorConsulta}</p>}
+                    {errorConsulta && <p role="alert" className="text-sm font-semibold text-red-600">{errorConsulta}</p>}
                     <button
                       type="submit"
                       disabled={enviando}
@@ -433,6 +425,26 @@ export default function PublicacionDetallePage() {
                       {enviando ? 'Enviando...' : 'Enviar consulta'}
                     </button>
                   </form>
+                ) : accesoConsulta === 'desconocida' ? (
+                  <p className="text-sm font-semibold text-slate-500">Revisando tu cuenta...</p>
+                ) : (
+                  <div className="sm:max-w-md">
+                    <p className="text-sm font-semibold text-slate-600">
+                      {accesoConsulta === 'anonimo'
+                        ? 'Ingresá o creá tu cuenta para consultar por este auto'
+                        : 'Completá tus datos para poder consultar'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const { ruta, state } = destinoDeGate(accesoConsulta, location.pathname + location.search)
+                        navigate(ruta, { state })
+                      }}
+                      className="mt-3 rounded-xl bg-navy px-4 py-3 text-sm font-bold text-white transition hover:bg-navy-dark"
+                    >
+                      {accesoConsulta === 'anonimo' ? 'Ingresar' : 'Completar mis datos'}
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -553,7 +565,7 @@ export default function PublicacionDetallePage() {
                   onClick={requiereCuenta}
                   className="mt-4 w-full rounded-xl bg-bronze px-6 py-4 text-sm font-bold text-white shadow-lg shadow-bronze/20 transition hover:bg-navy"
                 >
-                  Reservar o agendar visita
+                  Lo quiero
                 </button>
               </>
             )}
