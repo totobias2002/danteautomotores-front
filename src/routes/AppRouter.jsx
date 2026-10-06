@@ -10,6 +10,9 @@ import CreditosPage from '../pages/CreditosPage.jsx'
 import NoEncontradaPage from '../pages/NoEncontradaPage.jsx'
 import VenderPage from '../pages/VenderPage.jsx'
 import CompletarDatosPage from '../pages/CompletarDatosPage.jsx'
+import OlvideContrasenaPage from '../pages/OlvideContrasenaPage.jsx'
+import RestablecerContrasenaPage from '../pages/RestablecerContrasenaPage.jsx'
+import ConfirmarEmailPage from '../pages/ConfirmarEmailPage.jsx'
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx'
 import AdminSolicitudesVentaPage from '../pages/admin/AdminSolicitudesVentaPage.jsx'
 import AdminPublicacionFormPage from '../pages/admin/AdminPublicacionFormPage.jsx'
@@ -24,6 +27,9 @@ export default function AppRouter() {
       <Route path="/agencias/:slug" element={<AgenciaPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegistroPage />} />
+      <Route path="/olvide-contrasena" element={<OlvideContrasenaPage />} />
+      <Route path="/restablecer-contrasena" element={<RestablecerContrasenaPage />} />
+      <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
       <Route path="/creditos" element={<CreditosPage />} />
       <Route path="/vender" element={<VenderPage />} />
       <Route
