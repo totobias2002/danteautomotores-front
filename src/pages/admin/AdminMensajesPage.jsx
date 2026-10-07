@@ -152,7 +152,6 @@ export default function AdminMensajesPage() {
           <ArrowLeft className="h-3.5 w-3.5" /> Volver al panel
         </Link>
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-bronze">Panel</p>
-        <h1 className="mt-2 font-heading text-3xl text-navy-dark">Mensajes</h1>
         <p className="mt-2 text-sm text-slate-500">Las conversaciones de todos los usuarios con la agencia.</p>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
