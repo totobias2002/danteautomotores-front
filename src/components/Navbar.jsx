@@ -21,8 +21,6 @@ export default function Navbar() {
         <div className="hidden flex-1 items-center justify-center gap-7 text-sm font-bold text-navy-dark/80 md:flex">
           <Link to="/autos" className="transition hover:text-bronze">Comprar tu auto</Link>
           <Link to="/vender" className="transition hover:text-bronze">Vender tu auto</Link>
-          <span className="cursor-default select-none text-navy-dark/40">Nuestras sucursales</span>
-          <span className="cursor-default select-none text-navy-dark/40">Nosotros</span>
           {esComprador && (
             <Link to="/mensajes" className="inline-flex items-center gap-1.5 transition hover:text-bronze">
               Mis mensajes

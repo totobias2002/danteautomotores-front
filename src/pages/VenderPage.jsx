@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import api from '../services/api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 import { CIUDADES, KM_MAXIMO, MARCAS, MODELOS_SUGERIDOS } from '../constants/vehiculo.js'
 
@@ -76,6 +77,7 @@ const COMO_FUNCIONA = [
 ]
 
 export default function VenderPage() {
+  const { refrescarUsuario } = useAuth()
   const [paso, setPaso] = useState(1)
   const [datosAuto, setDatosAuto] = useState({ marca: '', modelo: '', anio: '', kilometraje: '' })
   const [otraMarca, setOtraMarca] = useState(false)
@@ -83,6 +85,26 @@ export default function VenderPage() {
   const [datosContacto, setDatosContacto] = useState({ nombre: '', telefono: '', ciudad: '', descripcion: '' })
   const [enviado, setEnviado] = useState(false)
   const [error, setError] = useState('')
+
+  // El teléfono no se guarda en el navegador: se pide al servidor y completa el paso Contacto
+  // solo en lo que la persona todavía no escribió.
+  useEffect(() => {
+    let activo = true
+    refrescarUsuario()
+      .then((perfil) => {
+        if (!activo) return
+        const nombreCompleto = [perfil.nombre, perfil.apellido].filter(Boolean).join(' ')
+        setDatosContacto((actual) => ({
+          ...actual,
+          nombre: actual.nombre || nombreCompleto,
+          telefono: actual.telefono || perfil.telefono || '',
+        }))
+      })
+      .catch(() => {})
+    return () => {
+      activo = false
+    }
+  }, [])
 
   const estimacion = calcularEstimacion(datosAuto)
 
