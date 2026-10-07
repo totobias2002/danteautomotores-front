@@ -3,6 +3,7 @@ import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import BannerCuentaIncompleta from './components/BannerCuentaIncompleta.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
+import DevCambioDeCuenta from './components/DevCambioDeCuenta.jsx' // TEMPORAL: borrar
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <AppRouter />
       </div>
       <Footer />
+      <DevCambioDeCuenta /> {/* TEMPORAL: borrar */}
     </div>
   )
 }
