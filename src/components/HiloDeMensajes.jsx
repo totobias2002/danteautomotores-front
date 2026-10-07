@@ -63,7 +63,7 @@ export default function HiloDeMensajes({
   return (
     <div className="flex flex-col">
       {/* Alto fijo: el hilo scrollea por dentro y el resto de la página (pie incluido) no se corre con cada mensaje. */}
-      <div ref={contenedorDelHilo} className="h-[50vh] min-h-72 overflow-y-auto pr-1">
+      <div ref={contenedorDelHilo} className="h-[calc(100vh-33rem)] min-h-40 overflow-y-auto pr-1">
       <ul className="flex flex-col gap-3" aria-live="polite">
         {mensajes.map((m) => {
           const propio = m.autor === miAutor
@@ -89,7 +89,7 @@ export default function HiloDeMensajes({
       </ul>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4">
         {puedeEscribir ? (
           <form onSubmit={alEnviarFormulario} className="rounded-2xl border border-slate-200 bg-white p-4">
             <label htmlFor="texto-mensaje" className="sr-only">
@@ -101,7 +101,7 @@ export default function HiloDeMensajes({
               onChange={(e) => setTexto(e.target.value)}
               onKeyDown={alTeclear}
               maxLength={MAXIMO}
-              rows={3}
+              rows={2}
               placeholder="Escribí tu mensaje..."
               className="w-full resize-y text-base text-navy outline-none placeholder:text-slate-400"
             />

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, ImagePlus, Loader2, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
+import SelectorDeEstado from '../../components/SelectorDeEstado.jsx'
 import { mensajeDeError } from '../../utils/errores.js'
 import { TIPO_CARROCERIA, opcionesDe } from '../../utils/etiquetas.js'
 import { KM_MAXIMO, MARCAS, MODELOS_SUGERIDOS } from '../../constants/vehiculo.js'
@@ -367,6 +368,16 @@ export default function AdminPublicacionFormPage() {
             ? 'Actualizá los datos del vehículo — los cambios se guardan al instante.'
             : 'Cargá los datos del vehículo — cuando lo guardes vas a poder sumarle las fotos.'}
         </p>
+
+        {esEdicion && publicacion?.estado && (
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+            <SelectorDeEstado
+              publicacionId={publicacion.id}
+              estado={publicacion.estado}
+              onCambio={(data) => setPublicacion((actual) => ({ ...actual, estado: data.estado }))}
+            />
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-6">
           <Seccion titulo="Agencia">

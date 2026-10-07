@@ -5,6 +5,7 @@ import api from '../../services/api.js'
 import { useNoLeidos } from '../../context/NoLeidosContext.jsx'
 import HiloDeMensajes from '../../components/HiloDeMensajes.jsx'
 import PerfilDelUsuario from '../../components/PerfilDelUsuario.jsx'
+import SelectorDeEstado from '../../components/SelectorDeEstado.jsx'
 import useSondeo from '../../hooks/useSondeo.js'
 import { TRANSFORMACION_MINIATURA, urlMiniatura } from '../../utils/cloudinary.js'
 import { mensajeDeError } from '../../utils/errores.js'
@@ -23,7 +24,7 @@ const ESTADO_DE_LA_CONVERSACION = {
 
 const nombreDelUsuario = (usuario) => [usuario?.nombre, usuario?.apellido].filter(Boolean).join(' ') || 'Usuario'
 
-function EncabezadoDeLaConversacion({ conversacion }) {
+function EncabezadoDeLaConversacion({ conversacion, onEstadoDelAuto }) {
   const { publicacion } = conversacion
   const estadoDeLaConversacion = ESTADO_DE_LA_CONVERSACION[conversacion.estado]
   const estadoDelAuto = publicacion ? ESTADO[publicacion.estado] : null
@@ -59,6 +60,16 @@ function EncabezadoDeLaConversacion({ conversacion }) {
             )}
           </div>
         </Link>
+      )}
+
+      {publicacion && (
+        <div className="mt-3">
+          <SelectorDeEstado
+            publicacionId={publicacion.id}
+            estado={publicacion.estado}
+            onCambio={(data) => onEstadoDelAuto(data.estado)}
+          />
+        </div>
       )}
 
       <div className={`${publicacion ? 'mt-3 ' : ''}flex flex-wrap items-center gap-1.5`}>
@@ -257,7 +268,12 @@ export default function AdminConversacionPage() {
             <PanelDelUsuario usuarioId={conversacion.usuario?.id} usuario={conversacion.usuario} />
 
             <div>
-            <EncabezadoDeLaConversacion conversacion={conversacion} />
+            <EncabezadoDeLaConversacion
+              conversacion={conversacion}
+              onEstadoDelAuto={(estado) =>
+                setConversacion((actual) => ({ ...actual, publicacion: { ...actual.publicacion, estado } }))
+              }
+            />
 
             <div className="mt-3 flex flex-wrap items-center justify-end gap-3">
               {errorDeEstado && (

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import api from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useNoLeidos } from '../context/NoLeidosContext.jsx'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import HiloDeMensajes from '../components/HiloDeMensajes.jsx'
 import useSondeo from '../hooks/useSondeo.js'
 import { TRANSFORMACION_MINIATURA, urlMiniatura } from '../utils/cloudinary.js'
@@ -71,6 +72,10 @@ export default function ConversacionPage() {
   const { id } = useParams()
   const { esAdmin } = useAuth()
   const { refrescar } = useNoLeidos()
+  const navigate = useNavigate()
+  const [confirmandoBorrado, setConfirmandoBorrado] = useState(false)
+  const [borrando, setBorrando] = useState(false)
+  const [errorAlBorrar, setErrorAlBorrar] = useState('')
   const [conversacion, setConversacion] = useState(null)
   const [mensajes, setMensajes] = useState([])
   const [cargando, setCargando] = useState(true)
@@ -151,6 +156,21 @@ export default function ConversacionPage() {
 
   const cerrada = conversacion?.estado === 'CERRADA'
 
+  // Borrar solo la saca de la lista del comprador: la agencia conserva la conversación completa.
+  const borrar = async () => {
+    if (borrando) return
+    setBorrando(true)
+    setErrorAlBorrar('')
+    try {
+      await api.delete(`/conversaciones/${id}`)
+      await refrescar()
+      navigate('/mensajes', { replace: true })
+    } catch (err) {
+      setErrorAlBorrar(mensajeDeError(err, 'No se pudo borrar la conversación. Intentá de nuevo.'))
+      setBorrando(false)
+    }
+  }
+
   return (
     <main className="bg-[#fafaf9] px-6 py-10">
       <div className="mx-auto max-w-3xl">
@@ -208,6 +228,13 @@ export default function ConversacionPage() {
                           'Si querés retomarla, volvé a tocar Lo quiero en el auto.'
                         )}
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmandoBorrado(true)}
+                        className="mt-3 rounded-xl border border-red-300 px-5 py-2 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-white"
+                      >
+                        Borrar conversación
+                      </button>
                     </div>
                   ) : null
                 }
@@ -217,6 +244,18 @@ export default function ConversacionPage() {
           </>
         )}
       </div>
+
+      <ConfirmDialog
+        abierto={confirmandoBorrado}
+        titulo="Borrar conversación"
+        textoConfirmar="Borrar"
+        cargando={borrando}
+        error={errorAlBorrar}
+        onConfirmar={borrar}
+        onCancelar={() => setConfirmandoBorrado(false)}
+      >
+        <p>La conversación desaparece de tu lista de mensajes. Esto no se puede deshacer desde tu cuenta.</p>
+      </ConfirmDialog>
     </main>
   )
 }
