@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import api from '../../services/api.js'
 import { useNoLeidos } from '../../context/NoLeidosContext.jsx'
 import HiloDeMensajes from '../../components/HiloDeMensajes.jsx'
+import PerfilDelUsuario from '../../components/PerfilDelUsuario.jsx'
 import useSondeo from '../../hooks/useSondeo.js'
 import { TRANSFORMACION_MINIATURA, urlMiniatura } from '../../utils/cloudinary.js'
 import { mensajeDeError } from '../../utils/errores.js'
@@ -23,31 +24,17 @@ const ESTADO_DE_LA_CONVERSACION = {
 const nombreDelUsuario = (usuario) => [usuario?.nombre, usuario?.apellido].filter(Boolean).join(' ') || 'Usuario'
 
 function EncabezadoDeLaConversacion({ conversacion }) {
-  const { publicacion, usuario } = conversacion
+  const { publicacion } = conversacion
   const estadoDeLaConversacion = ESTADO_DE_LA_CONVERSACION[conversacion.estado]
   const estadoDelAuto = publicacion ? ESTADO[publicacion.estado] : null
   const foto = publicacion ? urlMiniatura(publicacion.fotoPortada, TRANSFORMACION_MINIATURA) : null
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Usuario</p>
-        <h1 className="mt-1 text-lg font-bold text-navy-dark">{nombreDelUsuario(usuario)}</h1>
-        {usuario?.email && <p className="text-sm text-slate-500">{usuario.email}</p>}
-        {usuario?.id != null && (
-          <Link
-            to={`/admin/usuarios/${usuario.id}`}
-            className="mt-1 inline-block text-sm font-bold text-bronze hover:underline"
-          >
-            Ver ficha del usuario
-          </Link>
-        )}
-      </div>
-
       {publicacion && (
         <Link
           to={`/publicaciones/${publicacion.id}`}
-          className="mt-4 flex gap-4 rounded-xl border border-slate-200 p-3 transition hover:border-bronze"
+          className="flex gap-4 rounded-xl border border-slate-200 p-3 transition hover:border-bronze"
         >
           <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-[#d7d9d7]">
             {foto ? (
@@ -74,7 +61,7 @@ function EncabezadoDeLaConversacion({ conversacion }) {
         </Link>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+      <div className={`${publicacion ? 'mt-3 ' : ''}flex flex-wrap items-center gap-1.5`}>
         <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
           {etiquetaTipo(conversacion.tipo)}
         </span>
@@ -85,6 +72,53 @@ function EncabezadoDeLaConversacion({ conversacion }) {
         )}
       </div>
     </div>
+  )
+}
+
+// Perfil del usuario a la izquierda de la conversación: pide la ficha completa (teléfono, DNI, estado de la cuenta).
+// Si falla no se muestra error: el encabezado ya trae nombre y mail, y la ficha completa sigue en su propia página.
+function PanelDelUsuario({ usuarioId, usuario }) {
+  const [ficha, setFicha] = useState(null)
+
+  useEffect(() => {
+    if (usuarioId == null) return undefined
+    let activo = true
+    setFicha(null)
+    api
+      .get(`/admin/usuarios/${usuarioId}`)
+      .then((res) => {
+        if (activo) setFicha(res.data)
+      })
+      .catch(() => {})
+    return () => {
+      activo = false
+    }
+  }, [usuarioId])
+
+  const cantidad = Array.isArray(ficha?.conversaciones) ? ficha.conversaciones.length : null
+
+  return (
+    <aside className="rounded-2xl border border-slate-200 bg-white p-5 lg:sticky lg:top-24">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Perfil del usuario</p>
+      <h2 className="mt-1 text-lg font-bold text-navy-dark">{nombreDelUsuario(ficha ?? usuario)}</h2>
+      <div className="mt-4">
+        {ficha ? (
+          <PerfilDelUsuario ficha={ficha} />
+        ) : (
+          usuario?.email && <p className="break-all text-sm text-slate-500">{usuario.email}</p>
+        )}
+      </div>
+      {cantidad != null && (
+        <p className="mt-4 text-sm text-slate-500">
+          {cantidad} {cantidad === 1 ? 'conversación' : 'conversaciones'} en total
+        </p>
+      )}
+      {usuarioId != null && (
+        <Link to={`/admin/usuarios/${usuarioId}`} className="mt-3 inline-block text-sm font-bold text-bronze hover:underline">
+          Ver ficha completa
+        </Link>
+      )}
+    </aside>
   )
 }
 
@@ -189,7 +223,7 @@ export default function AdminConversacionPage() {
 
   return (
     <main className="min-h-screen bg-[#fafaf9] px-6 py-10">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-6xl">
         <Link
           to="/admin/mensajes"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-bronze"
@@ -219,10 +253,11 @@ export default function AdminConversacionPage() {
             </button>
           </div>
         ) : (
-          <>
-            <div className="mt-4">
-              <EncabezadoDeLaConversacion conversacion={conversacion} />
-            </div>
+          <div className="mt-4 grid items-start gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
+            <PanelDelUsuario usuarioId={conversacion.usuario?.id} usuario={conversacion.usuario} />
+
+            <div>
+            <EncabezadoDeLaConversacion conversacion={conversacion} />
 
             <div className="mt-3 flex flex-wrap items-center justify-end gap-3">
               {errorDeEstado && (
@@ -254,7 +289,8 @@ export default function AdminConversacionPage() {
                 onEnviar={responder}
               />
             </div>
-          </>
+            </div>
+          </div>
         )}
       </div>
     </main>

@@ -3,28 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import api from '../../services/api.js'
 import BadgeNoLeidos from '../../components/BadgeNoLeidos.jsx'
-import { etiquetaFaltante } from '../../utils/cuenta.js'
+import PerfilDelUsuario from '../../components/PerfilDelUsuario.jsx'
 import { mensajeDeError } from '../../utils/errores.js'
 import { etiquetaTipo, extracto, fechaDeMensaje } from '../../utils/mensajes.js'
 
 const ESTADO_DE_LA_CONVERSACION = {
   ABIERTA: { texto: 'Abierta', clase: 'bg-emerald-100 text-emerald-700' },
   CERRADA: { texto: 'Cerrada', clase: 'bg-slate-200 text-slate-500' },
-}
-
-// "2026-03-15" (fecha sin hora) se muestra como "15/03/2026" sin pasar por Date: no hay corrimiento de zona horaria.
-function fechaSinHora(iso) {
-  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso ?? '')
-  return partes ? `${partes[3]}/${partes[2]}/${partes[1]}` : ''
-}
-
-function Dato({ titulo, children }) {
-  return (
-    <div>
-      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{titulo}</dt>
-      <dd className="mt-0.5 text-sm font-semibold text-navy-dark">{children}</dd>
-    </div>
-  )
 }
 
 function FilaDelHistorial({ conversacion }) {
@@ -103,7 +88,6 @@ export default function AdminUsuarioPage() {
 
   const nombreCompleto = ficha ? [ficha.nombre, ficha.apellido].filter(Boolean).join(' ') : ''
   const conversaciones = Array.isArray(ficha?.conversaciones) ? ficha.conversaciones : []
-  const faltantes = Array.isArray(ficha?.faltantes) ? ficha.faltantes : []
 
   return (
     <main className="min-h-screen bg-[#fafaf9] px-6 py-10">
@@ -142,42 +126,7 @@ export default function AdminUsuarioPage() {
             <h1 className="mt-1 font-heading text-3xl text-navy-dark">{nombreCompleto || 'Usuario'}</h1>
 
             <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
-              <dl className="grid gap-4 sm:grid-cols-2">
-                <Dato titulo="Mail">
-                  <span className="break-all">{ficha.email}</span>
-                  <span
-                    className={`ml-2 rounded-full px-2.5 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wider ${
-                      ficha.emailConfirmado ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                    }`}
-                  >
-                    {ficha.emailConfirmado ? 'confirmado' : 'sin confirmar'}
-                  </span>
-                </Dato>
-                <Dato titulo="Teléfono">
-                  {ficha.telefono ? (
-                    <a href={`tel:${ficha.telefono}`} className="text-bronze hover:underline">
-                      {ficha.telefono}
-                    </a>
-                  ) : (
-                    <span className="font-normal text-slate-400">Sin cargar</span>
-                  )}
-                </Dato>
-                <Dato titulo="DNI">
-                  {ficha.dni || <span className="font-normal text-slate-400">Sin cargar</span>}
-                </Dato>
-                <Dato titulo="Cliente desde">
-                  {fechaSinHora(ficha.fechaRegistro) || <span className="font-normal text-slate-400">Sin dato</span>}
-                </Dato>
-                <Dato titulo="Estado de la cuenta">
-                  {ficha.cuentaVerificada ? (
-                    <span className="text-emerald-700">Verificada</span>
-                  ) : (
-                    <span className="text-amber-700">
-                      Falta: {faltantes.map(etiquetaFaltante).join(', ') || 'completar datos'}
-                    </span>
-                  )}
-                </Dato>
-              </dl>
+              <PerfilDelUsuario ficha={ficha} columnas />
             </section>
 
             <section className="mt-8">
