@@ -75,6 +75,8 @@ export default function PublicacionDetallePage() {
   const [enviado, setEnviado] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [errorConsulta, setErrorConsulta] = useState('')
+  const [abriendoConversacion, setAbriendoConversacion] = useState(false)
+  const [errorLoQuiero, setErrorLoQuiero] = useState('')
 
   // Un link directo puede abrir un auto en cualquier estado (D-06). La carga se repite si cambia el id (por ejemplo,
   // al pasar de un vendido a uno de sus parecidos) y se descarta si el usuario ya se fue a otro auto.
@@ -90,6 +92,8 @@ export default function PublicacionDetallePage() {
     setErrorFavorito('')
     setEnviado(false)
     setErrorConsulta('')
+    setAbriendoConversacion(false)
+    setErrorLoQuiero('')
 
     api
       .get(`/publicaciones/${id}`)
@@ -160,13 +164,32 @@ export default function PublicacionDetallePage() {
   }, [publicacion])
 
   // Lo quiero, Cotizar y Simulá tu financiamiento exigen cuenta verificada (AUTH-06): sin sesión llevan al login y con
-  // la cuenta incompleta a Completá tus datos, y en ambos casos vuelven a esta ficha. Para una cuenta verificada
-  // conservan el aviso temporal hasta que las Fases 4 (Lo quiero) y 5 (cotizador) conecten el flujo real.
+  // la cuenta incompleta a Completá tus datos, y en ambos casos vuelven a esta ficha. Cotizar y Simulá tu financiamiento
+  // conservan el aviso temporal hasta que la Fase 5 (cotizador) conecte el flujo real; Lo quiero ya abre la conversación.
   const requiereCuenta = () =>
     exigir(() => {
       setAvisoCuenta(true)
       setTimeout(() => setAvisoCuenta(false), 4000)
     })
+
+  // Lo quiero abre (o reutiliza) la conversación de compra con la agencia y lleva a Mis mensajes. Si el back rechaza
+  // el pedido, el motivo se muestra debajo del botón; el 403 de cuenta no verificada lo maneja el interceptor de api.js.
+  const abrirConversacion = async () => {
+    if (abriendoConversacion) return
+    setErrorLoQuiero('')
+    setAbriendoConversacion(true)
+    try {
+      await api.post('/conversaciones', { publicacionId: Number(id) })
+      navigate('/mensajes')
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        setErrorLoQuiero(mensajeDeError(err, 'No se pudo abrir la conversación. Intentá de nuevo.'))
+      }
+      setAbriendoConversacion(false)
+    }
+  }
+
+  const handleLoQuiero = () => exigir(abrirConversacion)
 
   // Al cambiar de auto no queda el mensaje a medio escribir del anterior.
   useEffect(() => {
@@ -562,11 +585,17 @@ export default function PublicacionDetallePage() {
 
                 <button
                   type="button"
-                  onClick={requiereCuenta}
-                  className="mt-4 w-full rounded-xl bg-bronze px-6 py-4 text-sm font-bold text-white shadow-lg shadow-bronze/20 transition hover:bg-navy"
+                  onClick={handleLoQuiero}
+                  disabled={abriendoConversacion}
+                  className="mt-4 w-full rounded-xl bg-bronze px-6 py-4 text-sm font-bold text-white shadow-lg shadow-bronze/20 transition hover:bg-navy disabled:opacity-60"
                 >
-                  Lo quiero
+                  {abriendoConversacion ? 'Abriendo conversación...' : 'Lo quiero'}
                 </button>
+                {errorLoQuiero && (
+                  <p role="alert" className="mt-3 text-center text-xs font-semibold text-red-600">
+                    {errorLoQuiero}
+                  </p>
+                )}
               </>
             )}
 
