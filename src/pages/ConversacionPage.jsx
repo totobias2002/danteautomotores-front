@@ -146,8 +146,8 @@ export default function ConversacionPage() {
     setMensajes((actuales) => (actuales.some((m) => m.id === res.data.id) ? actuales : [...actuales, res.data]))
   }
 
-  // El admin atiende desde su propia bandeja (D-17); por ahora lo lleva al panel.
-  if (esAdmin) return <Navigate to="/admin" replace />
+  // El admin atiende desde su propia bandeja (D-17): el mismo hilo, en su panel.
+  if (esAdmin) return <Navigate to={`/admin/mensajes/${id}`} replace />
 
   const cerrada = conversacion?.estado === 'CERRADA'
 
