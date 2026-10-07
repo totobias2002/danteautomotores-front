@@ -55,6 +55,27 @@ export function horaYFecha(iso, ahora = new Date()) {
   return `${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)}/${fecha.getFullYear()} ${hora}`
 }
 
+// Solo la hora "HH:mm" de un mensaje, en la hora local del navegador.
+export function soloHora(iso) {
+  if (!iso) return ''
+  const fecha = new Date(iso)
+  if (Number.isNaN(fecha.getTime())) return ''
+  return `${dosDigitos(fecha.getHours())}:${dosDigitos(fecha.getMinutes())}`
+}
+
+// Título del separador de día dentro del hilo: "Hoy", "Ayer", "7 de octubre" o con año si es de otro año.
+const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+export function etiquetaDeDia(iso, ahora = new Date()) {
+  if (!iso) return ''
+  const fecha = new Date(iso)
+  if (Number.isNaN(fecha.getTime())) return ''
+  const inicio = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  if (inicio(fecha) === inicio(ahora)) return 'Hoy'
+  if (inicio(fecha) === inicio(new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - 1))) return 'Ayer'
+  const base = `${fecha.getDate()} de ${MESES_LARGOS[fecha.getMonth()]}`
+  return fecha.getFullYear() === ahora.getFullYear() ? base : `${base} de ${fecha.getFullYear()}`
+}
+
 // Texto del círculo de no leídos: vacío si no hay, el número del 1 al 9 y "9+" desde 10 (cabe en el círculo).
 export function textoContador(cantidad) {
   const n = Number(cantidad)
