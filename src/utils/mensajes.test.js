@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { etiquetaTipo, extracto, fechaDeMensaje } from './mensajes.js'
+import { etiquetaTipo, extracto, fechaDeMensaje, horaYFecha } from './mensajes.js'
 
 // Las fechas se arman con componentes locales (y se pasan como ISO) para que los tests pasen en cualquier zona horaria.
 const local = (anio, mes, dia, hora = 0, minuto = 0) => new Date(anio, mes - 1, dia, hora, minuto)
@@ -55,4 +55,32 @@ test('fechaDeMensaje: otro año muestra dd/mm/aaaa', () => {
 test('fechaDeMensaje: una fecha vacía o inválida da texto vacío', () => {
   assert.equal(fechaDeMensaje(null), '')
   assert.equal(fechaDeMensaje('no es una fecha'), '')
+})
+
+test('horaYFecha: hoy muestra solo la hora', () => {
+  const ahora = local(2026, 10, 7, 18, 30)
+  assert.equal(horaYFecha(iso(local(2026, 10, 7, 14, 32)), ahora), '14:32')
+  assert.equal(horaYFecha(iso(local(2026, 10, 7, 0, 5)), ahora), '00:05')
+})
+
+test('horaYFecha: otro día del mismo año muestra día, mes abreviado y hora', () => {
+  const ahora = local(2026, 10, 7, 12, 0)
+  assert.equal(horaYFecha(iso(local(2026, 10, 6, 23, 59)), ahora), '6 oct 23:59')
+  assert.equal(horaYFecha(iso(local(2026, 1, 20, 9, 7)), ahora), '20 ene 09:07')
+})
+
+test('horaYFecha: otro año muestra dd/mm/aaaa y la hora', () => {
+  const ahora = local(2026, 10, 7, 12, 0)
+  assert.equal(horaYFecha(iso(local(2025, 10, 7, 14, 32)), ahora), '07/10/2025 14:32')
+  assert.equal(horaYFecha(iso(local(2025, 12, 31, 23, 0)), local(2026, 1, 1, 10, 0)), '31/12/2025 23:00')
+})
+
+test('horaYFecha: el mismo día y mes de otro año no se toma por hoy', () => {
+  assert.equal(horaYFecha(iso(local(2025, 10, 7, 14, 32)), local(2026, 10, 7, 18, 0)), '07/10/2025 14:32')
+})
+
+test('horaYFecha: una fecha vacía o inválida da texto vacío', () => {
+  assert.equal(horaYFecha(null), '')
+  assert.equal(horaYFecha(undefined), '')
+  assert.equal(horaYFecha('no es una fecha'), '')
 })

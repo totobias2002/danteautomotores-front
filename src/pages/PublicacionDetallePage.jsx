@@ -171,15 +171,15 @@ export default function PublicacionDetallePage() {
       setTimeout(() => setAvisoCuenta(false), 4000)
     })
 
-  // Lo quiero abre (o reutiliza) la conversación de compra con la agencia y lleva a Mis mensajes. Si el back rechaza
+  // Lo quiero abre (o reutiliza) la conversación de compra con la agencia y lleva directo al hilo (D-04). Si el back rechaza
   // el pedido, el motivo se muestra debajo del botón; el 403 de cuenta no verificada lo maneja el interceptor de api.js.
   const abrirConversacion = async () => {
     if (abriendoConversacion) return
     setErrorLoQuiero('')
     setAbriendoConversacion(true)
     try {
-      await api.post('/conversaciones', { publicacionId: Number(id) })
-      navigate('/mensajes')
+      const { data } = await api.post('/conversaciones', { publicacionId: Number(id) })
+      navigate(`/mensajes/${data.id}`)
     } catch (err) {
       if (err?.response?.status !== 401) {
         setErrorLoQuiero(mensajeDeError(err, 'No se pudo abrir la conversación. Intentá de nuevo.'))
@@ -241,15 +241,15 @@ export default function PublicacionDetallePage() {
   }
 
   // "Consultar por este auto" abre (o reutiliza) la misma conversación de compra con el texto que escribió el usuario y
-  // lleva a Mis mensajes (04-03 cambia ese destino al hilo). Los datos de contacto salen de la cuenta, no del formulario.
+  // lleva directo al hilo (D-04). Los datos de contacto salen de la cuenta, no del formulario.
   const handleConsultaSubmit = async (e) => {
     e.preventDefault()
     if (enviando) return
     setErrorConsulta('')
     setEnviando(true)
     try {
-      await api.post('/conversaciones', { publicacionId: Number(id), mensaje })
-      navigate('/mensajes')
+      const { data } = await api.post('/conversaciones', { publicacionId: Number(id), mensaje })
+      navigate(`/mensajes/${data.id}`)
     } catch (err) {
       // Si el auto se vendió mientras tanto, el backend responde "Este auto ya se vendió". Un 401 no muestra nada: el
       // interceptor de api.js ya cierra la sesión y lleva a /login.

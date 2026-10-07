@@ -18,6 +18,7 @@ import AdminSolicitudesVentaPage from '../pages/admin/AdminSolicitudesVentaPage.
 import AdminPublicacionFormPage from '../pages/admin/AdminPublicacionFormPage.jsx'
 import PerfilPage from '../pages/PerfilPage.jsx'
 import MisMensajesPage from '../pages/MisMensajesPage.jsx'
+import ConversacionPage from '../pages/ConversacionPage.jsx'
 import PrivacidadPage from '../pages/PrivacidadPage.jsx'
 import ProtectedRoute from '../components/ProtectedRoute.jsx'
 import RutaVerificada from '../components/RutaVerificada.jsx'
@@ -49,6 +50,14 @@ export default function AppRouter() {
         element={
           <RutaVerificada>
             <MisMensajesPage />
+          </RutaVerificada>
+        }
+      />
+      <Route
+        path="/mensajes/:id"
+        element={
+          <RutaVerificada>
+            <ConversacionPage />
           </RutaVerificada>
         }
       />

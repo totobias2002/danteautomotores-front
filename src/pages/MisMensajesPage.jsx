@@ -17,37 +17,42 @@ function FilaConversacion({ conversacion }) {
   const estadoDelAuto = publicacion ? ESTADO[publicacion.estado] : null
 
   return (
-    <li className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-[#d7d9d7]">
-        {foto ? (
-          <img src={foto} alt="" loading="lazy" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">Sin foto</div>
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="truncate text-base font-bold text-navy-dark">{titulo}</h2>
-          <span className="shrink-0 text-xs font-semibold text-slate-400">
-            {fechaDeMensaje(conversacion.ultimoMensajeEn)}
-          </span>
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          {estadoDelAuto && (
-            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
-              {estadoDelAuto.texto}
-            </span>
+    <li>
+      <Link
+        to={`/mensajes/${conversacion.id}`}
+        className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-bronze"
+      >
+        <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-[#d7d9d7]">
+          {foto ? (
+            <img src={foto} alt="" loading="lazy" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">Sin foto</div>
           )}
-          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
-            {etiquetaTipo(conversacion.tipo)}
-          </span>
         </div>
-        {/* Texto plano: React lo escapa, nunca se interpreta como HTML. */}
-        <p className="mt-2 truncate text-sm text-slate-500">
-          {conversacion.ultimoMensajeAutor === 'AGENCIA' ? 'Dante Automotores: ' : conversacion.ultimoMensaje ? 'Vos: ' : ''}
-          {extracto(conversacion.ultimoMensaje, 120)}
-        </p>
-      </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="truncate text-base font-bold text-navy-dark">{titulo}</h2>
+            <span className="shrink-0 text-xs font-semibold text-slate-400">
+              {fechaDeMensaje(conversacion.ultimoMensajeEn)}
+            </span>
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {estadoDelAuto && (
+              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
+                {estadoDelAuto.texto}
+              </span>
+            )}
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+              {etiquetaTipo(conversacion.tipo)}
+            </span>
+          </div>
+          {/* Texto plano: React lo escapa, nunca se interpreta como HTML. */}
+          <p className="mt-2 truncate text-sm text-slate-500">
+            {conversacion.ultimoMensajeAutor === 'AGENCIA' ? 'Dante Automotores: ' : conversacion.ultimoMensaje ? 'Vos: ' : ''}
+            {extracto(conversacion.ultimoMensaje, 120)}
+          </p>
+        </div>
+      </Link>
     </li>
   )
 }

@@ -37,3 +37,20 @@ export function fechaDeMensaje(iso, ahora = new Date()) {
   if (fecha.getFullYear() === ahora.getFullYear()) return `${fecha.getDate()} ${MESES[fecha.getMonth()]}`
   return `${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)}/${fecha.getFullYear()}`
 }
+
+// Fecha y hora de un mensaje dentro del hilo. Hoy: "14:32"; otro día del mismo año: "7 oct 14:32"; otro año:
+// "07/10/2025 14:32". Siempre en la hora local del navegador.
+export function horaYFecha(iso, ahora = new Date()) {
+  if (!iso) return ''
+  const fecha = new Date(iso)
+  if (Number.isNaN(fecha.getTime())) return ''
+
+  const hora = `${dosDigitos(fecha.getHours())}:${dosDigitos(fecha.getMinutes())}`
+  const mismoDia =
+    fecha.getFullYear() === ahora.getFullYear() &&
+    fecha.getMonth() === ahora.getMonth() &&
+    fecha.getDate() === ahora.getDate()
+  if (mismoDia) return hora
+  if (fecha.getFullYear() === ahora.getFullYear()) return `${fecha.getDate()} ${MESES[fecha.getMonth()]} ${hora}`
+  return `${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)}/${fecha.getFullYear()} ${hora}`
+}
