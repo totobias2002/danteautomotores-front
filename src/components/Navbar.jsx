@@ -27,15 +27,7 @@ export default function Navbar() {
               <BadgeNoLeidos cantidad={noLeidos} />
             </Link>
           )}
-          {esAdmin && (
-            <>
-              <Link to="/admin" className="transition hover:text-bronze">Administración</Link>
-              <Link to="/admin/mensajes" className="inline-flex items-center gap-1.5 transition hover:text-bronze">
-                Mensajes
-                <BadgeNoLeidos cantidad={noLeidos} />
-              </Link>
-            </>
-          )}
+          {esAdmin && <Link to="/admin" className="transition hover:text-bronze">Administración</Link>}
         </div>
 
         <div className="flex items-center gap-4">
