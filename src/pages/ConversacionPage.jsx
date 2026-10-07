@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import api from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useNoLeidos } from '../context/NoLeidosContext.jsx'
 import HiloDeMensajes from '../components/HiloDeMensajes.jsx'
 import useSondeo from '../hooks/useSondeo.js'
 import { TRANSFORMACION_MINIATURA, urlMiniatura } from '../utils/cloudinary.js'
@@ -69,6 +70,7 @@ function EncabezadoDelAuto({ conversacion }) {
 export default function ConversacionPage() {
   const { id } = useParams()
   const { esAdmin } = useAuth()
+  const { refrescar } = useNoLeidos()
   const [conversacion, setConversacion] = useState(null)
   const [mensajes, setMensajes] = useState([])
   const [cargando, setCargando] = useState(true)
@@ -114,6 +116,29 @@ export default function ConversacionPage() {
   }, [esAdmin, cargar])
 
   useSondeo(() => cargar(true), INTERVALO_MS, !esAdmin && !noEncontrada && conversacion !== null)
+
+  // Después de cada carga, si hay mensajes de la agencia sin leer y la pestaña está visible, se avisa al back (D-06) y se
+  // marcan como leídos en el estado local: así la consulta periódica no repite la llamada. Con la pestaña oculta no se
+  // marca nada; al volver a verla, la consulta periódica trae el hilo y este efecto corre de nuevo.
+  const marcandoLeidos = useRef(false)
+  useEffect(() => {
+    if (esAdmin || marcandoLeidos.current) return
+    if (document.visibilityState !== 'visible') return
+    if (!mensajes.some((m) => m.autor === 'AGENCIA' && !m.leido)) return
+
+    marcandoLeidos.current = true
+    api
+      .post(`/conversaciones/${id}/leida`)
+      .then(() => {
+        setMensajes((actuales) => actuales.map((m) => (m.autor === 'AGENCIA' ? { ...m, leido: true } : m)))
+        return refrescar()
+      })
+      // Un fallo no se muestra: el próximo ciclo de la consulta periódica lo reintenta (el 401 lo maneja api.js).
+      .catch(() => {})
+      .finally(() => {
+        marcandoLeidos.current = false
+      })
+  }, [mensajes, id, esAdmin, refrescar])
 
   // Al enviar se agrega el mensaje que devuelve el POST; la siguiente consulta periódica trae la lista del servidor.
   const enviar = async (texto) => {

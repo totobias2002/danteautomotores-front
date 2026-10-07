@@ -2,11 +2,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { MessageSquare } from 'lucide-react'
 import api from '../services/api.js'
+import BadgeNoLeidos from '../components/BadgeNoLeidos.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import useSondeo from '../hooks/useSondeo.js'
 import { TRANSFORMACION_MINIATURA, urlMiniatura } from '../utils/cloudinary.js'
 import { mensajeDeError } from '../utils/errores.js'
 import { ESTADO } from '../utils/etiquetas.js'
 import { etiquetaTipo, extracto, fechaDeMensaje } from '../utils/mensajes.js'
+
+// Cada cuánto se vuelve a pedir la lista (D-07): solo con la pestaña visible y sin WebSockets.
+const INTERVALO_MS = 30000
 
 function FilaConversacion({ conversacion }) {
   const { publicacion } = conversacion
@@ -15,6 +20,7 @@ function FilaConversacion({ conversacion }) {
     ? `${publicacion.marca} ${publicacion.modelo} ${publicacion.anio}`
     : etiquetaTipo(conversacion.tipo)
   const estadoDelAuto = publicacion ? ESTADO[publicacion.estado] : null
+  const noLeidos = conversacion.noLeidos > 0
 
   return (
     <li>
@@ -32,7 +38,8 @@ function FilaConversacion({ conversacion }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <h2 className="truncate text-base font-bold text-navy-dark">{titulo}</h2>
-            <span className="shrink-0 text-xs font-semibold text-slate-400">
+            <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-400">
+              <BadgeNoLeidos cantidad={conversacion.noLeidos} />
               {fechaDeMensaje(conversacion.ultimoMensajeEn)}
             </span>
           </div>
@@ -47,7 +54,7 @@ function FilaConversacion({ conversacion }) {
             </span>
           </div>
           {/* Texto plano: React lo escapa, nunca se interpreta como HTML. */}
-          <p className="mt-2 truncate text-sm text-slate-500">
+          <p className={`mt-2 truncate text-sm ${noLeidos ? 'font-bold text-navy-dark' : 'text-slate-500'}`}>
             {conversacion.ultimoMensajeAutor === 'AGENCIA' ? 'Dante Automotores: ' : conversacion.ultimoMensaje ? 'Vos: ' : ''}
             {extracto(conversacion.ultimoMensaje, 120)}
           </p>
@@ -63,25 +70,32 @@ export default function MisMensajesPage() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
 
-  const cargar = useCallback(() => {
-    setCargando(true)
-    setError('')
+  // `silencioso` es la consulta periódica: reemplaza la lista y no muestra "Cargando..." ni errores.
+  const cargar = useCallback((silencioso = false) => {
+    if (!silencioso) {
+      setCargando(true)
+      setError('')
+    }
     return api
       .get('/conversaciones')
       .then((res) => setConversaciones(Array.isArray(res.data) ? res.data : []))
       .catch((err) => {
         // Un 401 no muestra nada: el interceptor de api.js ya cierra la sesión y lleva a /login.
-        if (err?.response?.status !== 401) {
+        if (!silencioso && err?.response?.status !== 401) {
           setError(mensajeDeError(err, 'No se pudieron cargar tus mensajes'))
         }
       })
-      .finally(() => setCargando(false))
+      .finally(() => {
+        if (!silencioso) setCargando(false)
+      })
   }, [])
 
   useEffect(() => {
     if (esAdmin) return
     cargar()
   }, [esAdmin, cargar])
+
+  useSondeo(() => cargar(true), INTERVALO_MS, !esAdmin && !error)
 
   // El admin tiene su propia bandeja (D-17); por ahora lo lleva al panel.
   if (esAdmin) return <Navigate to="/admin" replace />
@@ -98,7 +112,7 @@ export default function MisMensajesPage() {
             <p role="alert" className="text-sm font-semibold text-red-600">{error}</p>
             <button
               type="button"
-              onClick={cargar}
+              onClick={() => cargar()}
               className="mt-4 rounded-xl border border-bronze px-5 py-2.5 text-sm font-bold text-bronze transition hover:bg-bronze hover:text-white"
             >
               Reintentar

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { etiquetaTipo, extracto, fechaDeMensaje, horaYFecha } from './mensajes.js'
+import { etiquetaTipo, extracto, fechaDeMensaje, horaYFecha, textoContador } from './mensajes.js'
 
 // Las fechas se arman con componentes locales (y se pasan como ISO) para que los tests pasen en cualquier zona horaria.
 const local = (anio, mes, dia, hora = 0, minuto = 0) => new Date(anio, mes - 1, dia, hora, minuto)
@@ -83,4 +83,20 @@ test('horaYFecha: una fecha vacía o inválida da texto vacío', () => {
   assert.equal(horaYFecha(null), '')
   assert.equal(horaYFecha(undefined), '')
   assert.equal(horaYFecha('no es una fecha'), '')
+})
+
+test('textoContador: vacío si es cero, el número del 1 al 9 y "9+" desde 10', () => {
+  assert.equal(textoContador(0), '')
+  assert.equal(textoContador(1), '1')
+  assert.equal(textoContador(9), '9')
+  assert.equal(textoContador(10), '9+')
+  assert.equal(textoContador(250), '9+')
+})
+
+test('textoContador: tolera valores que no son un conteo', () => {
+  assert.equal(textoContador(undefined), '')
+  assert.equal(textoContador(null), '')
+  assert.equal(textoContador(-3), '')
+  assert.equal(textoContador('x'), '')
+  assert.equal(textoContador('4'), '4')
 })

@@ -54,3 +54,10 @@ export function horaYFecha(iso, ahora = new Date()) {
   if (fecha.getFullYear() === ahora.getFullYear()) return `${fecha.getDate()} ${MESES[fecha.getMonth()]} ${hora}`
   return `${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)}/${fecha.getFullYear()} ${hora}`
 }
+
+// Texto del círculo de no leídos: vacío si no hay, el número del 1 al 9 y "9+" desde 10 (cabe en el círculo).
+export function textoContador(cantidad) {
+  const n = Number(cantidad)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  return n > 9 ? '9+' : String(Math.floor(n))
+}

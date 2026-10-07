@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom'
 import { Heart, MessageSquare, UserRound } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useNoLeidos } from '../context/NoLeidosContext.jsx'
+import BadgeNoLeidos from './BadgeNoLeidos.jsx'
 import Logo from './Logo.jsx'
 
 export default function Navbar() {
   const { usuario, esAdmin, logout } = useAuth()
+  const { noLeidos } = useNoLeidos()
+  // El admin atiende desde su propia bandeja (04-05 le suma su link): acá solo el comprador ve sus mensajes y su perfil.
+  const esComprador = Boolean(usuario) && !esAdmin
 
   return (
     <header className="bg-cream sticky top-0 z-40 border-b border-black/5">
@@ -18,8 +23,11 @@ export default function Navbar() {
           <Link to="/vender" className="transition hover:text-bronze">Vender tu auto</Link>
           <span className="cursor-default select-none text-navy-dark/40">Nuestras sucursales</span>
           <span className="cursor-default select-none text-navy-dark/40">Nosotros</span>
-          {usuario && (
-            <Link to="/mensajes" className="transition hover:text-bronze">Mis mensajes</Link>
+          {esComprador && (
+            <Link to="/mensajes" className="inline-flex items-center gap-1.5 transition hover:text-bronze">
+              Mis mensajes
+              <BadgeNoLeidos cantidad={noLeidos} />
+            </Link>
           )}
           {esAdmin && (
             <Link to="/admin" className="transition hover:text-bronze">Administración</Link>
@@ -35,6 +43,27 @@ export default function Navbar() {
           >
             <Heart className="h-5 w-5" />
           </Link>
+          {esComprador && (
+            <>
+              <Link
+                to="/mensajes"
+                aria-label={noLeidos > 0 ? `Mis mensajes, ${noLeidos} sin leer` : 'Mis mensajes'}
+                title="Mis mensajes"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full text-navy-dark/70 transition hover:bg-bronze/10 hover:text-bronze"
+              >
+                <MessageSquare className="h-5 w-5" />
+                <BadgeNoLeidos cantidad={noLeidos} className="absolute -right-1 -top-1" />
+              </Link>
+              <Link
+                to="/perfil"
+                aria-label="Mi perfil"
+                title="Mi perfil"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-navy-dark/70 transition hover:bg-bronze/10 hover:text-bronze"
+              >
+                <UserRound className="h-5 w-5" />
+              </Link>
+            </>
+          )}
           {usuario ? (
             <button
               onClick={logout}
