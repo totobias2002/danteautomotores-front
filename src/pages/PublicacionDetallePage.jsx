@@ -72,7 +72,6 @@ export default function PublicacionDetallePage() {
   const [enlaceCopiado, setEnlaceCopiado] = useState(false)
   const [avisoCuenta, setAvisoCuenta] = useState(false)
   const [mensaje, setMensaje] = useState('')
-  const [enviado, setEnviado] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [errorConsulta, setErrorConsulta] = useState('')
   const [abriendoConversacion, setAbriendoConversacion] = useState(false)
@@ -90,7 +89,7 @@ export default function PublicacionDetallePage() {
     setFavoritoOk(false)
     setGuardandoFavorito(false)
     setErrorFavorito('')
-    setEnviado(false)
+    setEnviando(false)
     setErrorConsulta('')
     setAbriendoConversacion(false)
     setErrorLoQuiero('')
@@ -194,7 +193,6 @@ export default function PublicacionDetallePage() {
   // Al cambiar de auto no queda el mensaje a medio escribir del anterior.
   useEffect(() => {
     setMensaje('')
-    setEnviado(false)
     setErrorConsulta('')
   }, [id])
 
@@ -242,17 +240,22 @@ export default function PublicacionDetallePage() {
     }
   }
 
+  // "Consultar por este auto" abre (o reutiliza) la misma conversación de compra con el texto que escribió el usuario y
+  // lleva a Mis mensajes (04-03 cambia ese destino al hilo). Los datos de contacto salen de la cuenta, no del formulario.
   const handleConsultaSubmit = async (e) => {
     e.preventDefault()
+    if (enviando) return
     setErrorConsulta('')
     setEnviando(true)
     try {
-      await api.post('/consultas', { publicacionId: Number(id), mensaje })
-      setEnviado(true)
+      await api.post('/conversaciones', { publicacionId: Number(id), mensaje })
+      navigate('/mensajes')
     } catch (err) {
-      // Si el auto se vendió mientras tanto, el backend responde "Este auto ya se vendió".
-      setErrorConsulta(mensajeDeError(err, 'No se pudo enviar la consulta'))
-    } finally {
+      // Si el auto se vendió mientras tanto, el backend responde "Este auto ya se vendió". Un 401 no muestra nada: el
+      // interceptor de api.js ya cierra la sesión y lleva a /login.
+      if (err?.response?.status !== 401) {
+        setErrorConsulta(mensajeDeError(err, 'No se pudo enviar el mensaje. Intentá de nuevo.'))
+      }
       setEnviando(false)
     }
   }
@@ -425,9 +428,7 @@ export default function PublicacionDetallePage() {
                     Este auto está reservado. Podés consultar igual por si la reserva se cae.
                   </p>
                 )}
-                {enviado ? (
-                  <p className="font-semibold text-bronze">¡Listo! La agencia se va a poner en contacto.</p>
-                ) : accesoConsulta === 'verificada' ? (
+                {accesoConsulta === 'verificada' ? (
                   <form onSubmit={handleConsultaSubmit} className="grid gap-3 sm:max-w-md">
                     <textarea
                       placeholder="Mensaje"
@@ -445,7 +446,7 @@ export default function PublicacionDetallePage() {
                       disabled={enviando}
                       className="rounded-xl bg-navy px-4 py-3 text-sm font-bold text-white transition hover:bg-navy-dark disabled:opacity-60"
                     >
-                      {enviando ? 'Enviando...' : 'Enviar consulta'}
+                      {enviando ? 'Enviando...' : 'Enviar mensaje'}
                     </button>
                   </form>
                 ) : accesoConsulta === 'desconocida' ? (
