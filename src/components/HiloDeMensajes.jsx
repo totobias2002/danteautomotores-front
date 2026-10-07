@@ -19,14 +19,16 @@ export default function HiloDeMensajes({
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
-  const finDelHilo = useRef(null)
+  const contenedorDelHilo = useRef(null)
   const cantidadAnterior = useRef(0)
 
-  // Baja al último mensaje cuando llega uno nuevo (no en cada consulta que trae la misma lista).
+  // Baja al último mensaje cuando llega uno nuevo (no en cada consulta que trae la misma lista). Se mueve solo el
+  // scroll del hilo, no el de la página, para que el pie quede quieto.
   useEffect(() => {
     if (mensajes.length !== cantidadAnterior.current) {
       cantidadAnterior.current = mensajes.length
-      finDelHilo.current?.scrollIntoView?.({ block: 'end' })
+      const contenedor = contenedorDelHilo.current
+      if (contenedor) contenedor.scrollTop = contenedor.scrollHeight
     }
   }, [mensajes])
 
@@ -60,6 +62,8 @@ export default function HiloDeMensajes({
 
   return (
     <div className="flex flex-col">
+      {/* Alto fijo: el hilo scrollea por dentro y el resto de la página (pie incluido) no se corre con cada mensaje. */}
+      <div ref={contenedorDelHilo} className="h-[50vh] min-h-72 overflow-y-auto pr-1">
       <ul className="flex flex-col gap-3" aria-live="polite">
         {mensajes.map((m) => {
           const propio = m.autor === miAutor
@@ -83,7 +87,7 @@ export default function HiloDeMensajes({
           )
         })}
       </ul>
-      <div ref={finDelHilo} />
+      </div>
 
       <div className="mt-6">
         {puedeEscribir ? (
