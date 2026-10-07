@@ -17,6 +17,7 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx'
 import AdminSolicitudesVentaPage from '../pages/admin/AdminSolicitudesVentaPage.jsx'
 import AdminMensajesPage from '../pages/admin/AdminMensajesPage.jsx'
 import AdminConversacionPage from '../pages/admin/AdminConversacionPage.jsx'
+import AdminUsuarioPage from '../pages/admin/AdminUsuarioPage.jsx'
 import AdminPublicacionFormPage from '../pages/admin/AdminPublicacionFormPage.jsx'
 import PerfilPage from '../pages/PerfilPage.jsx'
 import MisMensajesPage from '../pages/MisMensajesPage.jsx'
@@ -132,6 +133,14 @@ export default function AppRouter() {
         element={
           <ProtectedRoute soloAdmin>
             <AdminConversacionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/usuarios/:id"
+        element={
+          <ProtectedRoute soloAdmin>
+            <AdminUsuarioPage />
           </ProtectedRoute>
         }
       />

@@ -34,6 +34,14 @@ function EncabezadoDeLaConversacion({ conversacion }) {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Usuario</p>
         <h1 className="mt-1 text-lg font-bold text-navy-dark">{nombreDelUsuario(usuario)}</h1>
         {usuario?.email && <p className="text-sm text-slate-500">{usuario.email}</p>}
+        {usuario?.id != null && (
+          <Link
+            to={`/admin/usuarios/${usuario.id}`}
+            className="mt-1 inline-block text-sm font-bold text-bronze hover:underline"
+          >
+            Ver ficha del usuario
+          </Link>
+        )}
       </div>
 
       {publicacion && (
