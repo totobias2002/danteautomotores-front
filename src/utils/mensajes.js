@@ -61,3 +61,42 @@ export function textoContador(cantidad) {
   if (!Number.isFinite(n) || n <= 0) return ''
   return n > 9 ? '9+' : String(Math.floor(n))
 }
+
+// ---- Filtros de la bandeja del admin (viven en la URL: se pueden compartir y recargar) ----
+
+const TIPOS_DE_BANDEJA = ['COMPRA', 'COTIZACION']
+const ESTADOS_DE_BANDEJA = ['ABIERTA', 'CERRADA', 'TODAS']
+const ESTADO_POR_DEFECTO = 'ABIERTA'
+
+// Lee los filtros de la URL. Todo valor desconocido, ilegible, cero o negativo vuelve al valor por defecto: tipo vacío
+// (todos), estado ABIERTA, "solo no leídas" apagado y página 1.
+export function leerFiltrosBandeja(searchParams) {
+  const tipoLeido = searchParams.get('tipo')
+  const estadoLeido = searchParams.get('estado')
+  const paginaLeida = Number(searchParams.get('pagina'))
+  return {
+    tipo: TIPOS_DE_BANDEJA.includes(tipoLeido) ? tipoLeido : '',
+    estado: ESTADOS_DE_BANDEJA.includes(estadoLeido) ? estadoLeido : ESTADO_POR_DEFECTO,
+    soloNoLeidas: searchParams.get('soloNoLeidas') === 'true',
+    pagina: Number.isInteger(paginaLeida) && paginaLeida >= 1 ? paginaLeida : 1,
+  }
+}
+
+// Los parámetros de la URL sin los valores por defecto: una bandeja sin filtros tiene la URL limpia.
+export function paramsDeBandeja(filtros) {
+  const params = {}
+  if (filtros.tipo) params.tipo = filtros.tipo
+  if (filtros.estado && filtros.estado !== ESTADO_POR_DEFECTO) params.estado = filtros.estado
+  if (filtros.soloNoLeidas) params.soloNoLeidas = 'true'
+  if (filtros.pagina > 1) params.pagina = String(filtros.pagina)
+  return params
+}
+
+// Lo que viaja al back: "TODAS" no manda estado (el back sin estado devuelve todas), y los filtros apagados no viajan.
+export function paramsParaApi(filtros) {
+  const params = { pagina: filtros.pagina }
+  if (filtros.tipo) params.tipo = filtros.tipo
+  if (filtros.estado && filtros.estado !== 'TODAS') params.estado = filtros.estado
+  if (filtros.soloNoLeidas) params.soloNoLeidas = true
+  return params
+}

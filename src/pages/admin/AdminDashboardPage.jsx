@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Building2, Car, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
+import BadgeNoLeidos from '../../components/BadgeNoLeidos.jsx'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
+import { useNoLeidos } from '../../context/NoLeidosContext.jsx'
 import { urlMiniatura } from '../../utils/cloudinary.js'
 import { mensajeDeError } from '../../utils/errores.js'
 import { ZONA, opcionesDe } from '../../utils/etiquetas.js'
@@ -43,6 +45,7 @@ const fotoDePortada = (fotos) => {
 }
 
 export default function AdminDashboardPage() {
+  const { noLeidos } = useNoLeidos()
   const [agencias, setAgencias] = useState([])
   const [publicaciones, setPublicaciones] = useState([])
   const [nuevaAgencia, setNuevaAgencia] = useState(AGENCIA_INICIAL)
@@ -218,6 +221,20 @@ export default function AdminDashboardPage() {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Panel</p>
         <h1 className="mt-2 font-heading text-3xl text-navy-dark">Administración</h1>
         <p className="mt-2 text-sm text-slate-500">Gestioná las agencias y los autos publicados en el marketplace.</p>
+
+        <Link
+          to="/admin/mensajes"
+          className="mt-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-bronze"
+        >
+          <span>
+            <span className="flex items-center gap-2 text-sm font-bold text-navy-dark">
+              Mensajes
+              <BadgeNoLeidos cantidad={noLeidos} />
+            </span>
+            <span className="block text-xs text-slate-500">Las conversaciones de compra y de cotización con los usuarios.</span>
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-bronze" />
+        </Link>
 
         <Link
           to="/admin/solicitudes-venta"

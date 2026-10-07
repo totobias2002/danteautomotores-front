@@ -97,8 +97,8 @@ export default function MisMensajesPage() {
 
   useSondeo(() => cargar(true), INTERVALO_MS, !esAdmin && !error)
 
-  // El admin tiene su propia bandeja (D-17); por ahora lo lleva al panel.
-  if (esAdmin) return <Navigate to="/admin" replace />
+  // El admin tiene su propia bandeja (D-17): si entra a /mensajes termina ahí.
+  if (esAdmin) return <Navigate to="/admin/mensajes" replace />
 
   return (
     <main className="bg-[#fafaf9] px-6 py-10">

@@ -1,6 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { etiquetaTipo, extracto, fechaDeMensaje, horaYFecha, textoContador } from './mensajes.js'
+import {
+  etiquetaTipo,
+  extracto,
+  fechaDeMensaje,
+  horaYFecha,
+  leerFiltrosBandeja,
+  paramsDeBandeja,
+  paramsParaApi,
+  textoContador,
+} from './mensajes.js'
 
 // Las fechas se arman con componentes locales (y se pasan como ISO) para que los tests pasen en cualquier zona horaria.
 const local = (anio, mes, dia, hora = 0, minuto = 0) => new Date(anio, mes - 1, dia, hora, minuto)
@@ -99,4 +108,75 @@ test('textoContador: tolera valores que no son un conteo', () => {
   assert.equal(textoContador(-3), '')
   assert.equal(textoContador('x'), '')
   assert.equal(textoContador('4'), '4')
+})
+
+// ---- Filtros de la bandeja del admin ----
+
+const leer = (query) => leerFiltrosBandeja(new URLSearchParams(query))
+
+test('leerFiltrosBandeja: sin parámetros muestra las abiertas, de todos los tipos, en la página 1', () => {
+  assert.deepEqual(leer(''), { tipo: '', estado: 'ABIERTA', soloNoLeidas: false, pagina: 1 })
+})
+
+test('leerFiltrosBandeja: lee tipo, estado, solo no leídas y página', () => {
+  assert.deepEqual(leer('tipo=COTIZACION&estado=CERRADA&soloNoLeidas=true&pagina=3'), {
+    tipo: 'COTIZACION',
+    estado: 'CERRADA',
+    soloNoLeidas: true,
+    pagina: 3,
+  })
+  assert.equal(leer('estado=TODAS').estado, 'TODAS')
+  assert.equal(leer('tipo=COMPRA').tipo, 'COMPRA')
+})
+
+test('leerFiltrosBandeja: un tipo o un estado desconocido vuelve al valor por defecto', () => {
+  assert.equal(leer('tipo=NAVE').tipo, '')
+  assert.equal(leer('tipo=compra').tipo, '')
+  assert.equal(leer('estado=ANULADA').estado, 'ABIERTA')
+  assert.equal(leer('estado=').estado, 'ABIERTA')
+})
+
+test('leerFiltrosBandeja: una página ilegible, cero, negativa o decimal vuelve a la 1', () => {
+  assert.equal(leer('pagina=abc').pagina, 1)
+  assert.equal(leer('pagina=0').pagina, 1)
+  assert.equal(leer('pagina=-2').pagina, 1)
+  assert.equal(leer('pagina=2.5').pagina, 1)
+  assert.equal(leer('pagina=').pagina, 1)
+  assert.equal(leer('pagina=12').pagina, 12)
+})
+
+test('leerFiltrosBandeja: solo "true" enciende solo no leídas', () => {
+  assert.equal(leer('soloNoLeidas=true').soloNoLeidas, true)
+  assert.equal(leer('soloNoLeidas=1').soloNoLeidas, false)
+  assert.equal(leer('soloNoLeidas=false').soloNoLeidas, false)
+})
+
+test('paramsDeBandeja: los valores por defecto no viajan a la URL', () => {
+  assert.deepEqual(paramsDeBandeja({ tipo: '', estado: 'ABIERTA', soloNoLeidas: false, pagina: 1 }), {})
+  assert.deepEqual(paramsDeBandeja({ tipo: 'COMPRA', estado: 'CERRADA', soloNoLeidas: true, pagina: 2 }), {
+    tipo: 'COMPRA',
+    estado: 'CERRADA',
+    soloNoLeidas: 'true',
+    pagina: '2',
+  })
+  assert.deepEqual(paramsDeBandeja({ tipo: '', estado: 'TODAS', soloNoLeidas: false, pagina: 1 }), { estado: 'TODAS' })
+})
+
+test('paramsDeBandeja y leerFiltrosBandeja son inversas', () => {
+  const filtros = { tipo: 'COTIZACION', estado: 'TODAS', soloNoLeidas: true, pagina: 4 }
+  assert.deepEqual(leer(new URLSearchParams(paramsDeBandeja(filtros)).toString()), filtros)
+})
+
+test('paramsParaApi: TODAS no manda estado y los filtros apagados no viajan', () => {
+  assert.deepEqual(paramsParaApi({ tipo: '', estado: 'TODAS', soloNoLeidas: false, pagina: 1 }), { pagina: 1 })
+  assert.deepEqual(paramsParaApi({ tipo: '', estado: 'ABIERTA', soloNoLeidas: false, pagina: 1 }), {
+    pagina: 1,
+    estado: 'ABIERTA',
+  })
+  assert.deepEqual(paramsParaApi({ tipo: 'COMPRA', estado: 'CERRADA', soloNoLeidas: true, pagina: 3 }), {
+    pagina: 3,
+    tipo: 'COMPRA',
+    estado: 'CERRADA',
+    soloNoLeidas: true,
+  })
 })
