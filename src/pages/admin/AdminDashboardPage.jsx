@@ -170,7 +170,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // Borrar un auto se lleva sus consultas y favoritos (decisión: cascada + aviso). Antes de abrir el
+  // Borrar un auto se lleva sus conversaciones y favoritos (decisión: cascada + aviso). Antes de abrir el
   // diálogo se pide el conteo, y el botón de confirmar queda deshabilitado hasta tenerlo.
   const pedirEliminacion = (p) => {
     setErrorAccion('')
@@ -552,9 +552,9 @@ export default function AdminDashboardPage() {
 const plural = (n, singular, pluralTexto) => `${n} ${n === 1 ? singular : pluralTexto}`
 
 function ResumenImpacto({ impacto }) {
-  const { cantidadConsultas, cantidadFavoritos } = impacto
+  const { cantidadConversaciones, cantidadFavoritos } = impacto
   const partes = []
-  if (cantidadConsultas > 0) partes.push(`${plural(cantidadConsultas, 'consulta', 'consultas')} de compradores`)
+  if (cantidadConversaciones > 0) partes.push(`${plural(cantidadConversaciones, 'conversación', 'conversaciones')} con compradores`)
   if (cantidadFavoritos > 0) partes.push(plural(cantidadFavoritos, 'favorito', 'favoritos'))
   if (partes.length === 0) return null
   return <p className="mt-2">También se van a borrar {partes.join(' y ')}.</p>
