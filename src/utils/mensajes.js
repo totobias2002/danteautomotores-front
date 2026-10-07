@@ -99,6 +99,8 @@ export function leerFiltrosBandeja(searchParams) {
     tipo: TIPOS_DE_BANDEJA.includes(tipoLeido) ? tipoLeido : '',
     estado: ESTADOS_DE_BANDEJA.includes(estadoLeido) ? estadoLeido : ESTADO_POR_DEFECTO,
     soloNoLeidas: searchParams.get('soloNoLeidas') === 'true',
+    // Los mensajes de un solo auto (link "Mensajes" del panel): un id entero positivo o nada.
+    publicacionId: /^[1-9]\d{0,9}$/.test(searchParams.get('publicacionId') ?? '') ? searchParams.get('publicacionId') : '',
     pagina: Number.isInteger(paginaLeida) && paginaLeida >= 1 ? paginaLeida : 1,
   }
 }
@@ -109,6 +111,7 @@ export function paramsDeBandeja(filtros) {
   if (filtros.tipo) params.tipo = filtros.tipo
   if (filtros.estado && filtros.estado !== ESTADO_POR_DEFECTO) params.estado = filtros.estado
   if (filtros.soloNoLeidas) params.soloNoLeidas = 'true'
+  if (filtros.publicacionId) params.publicacionId = filtros.publicacionId
   if (filtros.pagina > 1) params.pagina = String(filtros.pagina)
   return params
 }
@@ -119,5 +122,6 @@ export function paramsParaApi(filtros) {
   if (filtros.tipo) params.tipo = filtros.tipo
   if (filtros.estado && filtros.estado !== 'TODAS') params.estado = filtros.estado
   if (filtros.soloNoLeidas) params.soloNoLeidas = true
+  if (filtros.publicacionId) params.publicacionId = Number(filtros.publicacionId)
   return params
 }

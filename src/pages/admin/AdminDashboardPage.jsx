@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Building2, Car, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react'
+import { ArrowRight, Building2, Car, MessageSquare, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react'
 import api from '../../services/api.js'
 import BadgeNoLeidos from '../../components/BadgeNoLeidos.jsx'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
@@ -502,6 +502,14 @@ export default function AdminDashboardPage() {
                         </option>
                       ))}
                     </select>
+                    <Link
+                      to={`/admin/mensajes?publicacionId=${p.id}&estado=TODAS`}
+                      aria-label={`Mensajes de ${p.marca} ${p.modelo}`}
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-semibold text-navy transition hover:border-bronze hover:text-bronze"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Mensajes
+                    </Link>
                     <Link
                       to={`/admin/publicaciones/${p.id}/editar`}
                       aria-label="Editar publicación"

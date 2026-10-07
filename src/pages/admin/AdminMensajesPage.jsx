@@ -154,6 +154,27 @@ export default function AdminMensajesPage() {
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-bronze">Panel</p>
         <p className="mt-2 text-sm text-slate-500">Las conversaciones de todos los usuarios con la agencia.</p>
 
+        {filtros.publicacionId && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-bronze/30 bg-bronze/5 px-4 py-2.5 text-sm">
+            <span className="font-semibold text-navy-dark">
+              Mensajes de un solo auto
+              {conversaciones[0]?.publicacion && (
+                <>
+                  {': '}
+                  {conversaciones[0].publicacion.marca} {conversaciones[0].publicacion.modelo} {conversaciones[0].publicacion.anio}
+                </>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={() => cambiarFiltro({ publicacionId: '' })}
+              className="font-bold text-bronze hover:underline"
+            >
+              Ver todos
+            </button>
+          </div>
+        )}
+
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <select
             aria-label="Filtrar por tipo"

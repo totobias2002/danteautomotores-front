@@ -115,7 +115,7 @@ test('textoContador: tolera valores que no son un conteo', () => {
 const leer = (query) => leerFiltrosBandeja(new URLSearchParams(query))
 
 test('leerFiltrosBandeja: sin parámetros muestra las abiertas, de todos los tipos, en la página 1', () => {
-  assert.deepEqual(leer(''), { tipo: '', estado: 'ABIERTA', soloNoLeidas: false, pagina: 1 })
+  assert.deepEqual(leer(''), { tipo: '', estado: 'ABIERTA', soloNoLeidas: false, publicacionId: '', pagina: 1 })
 })
 
 test('leerFiltrosBandeja: lee tipo, estado, solo no leídas y página', () => {
@@ -123,6 +123,7 @@ test('leerFiltrosBandeja: lee tipo, estado, solo no leídas y página', () => {
     tipo: 'COTIZACION',
     estado: 'CERRADA',
     soloNoLeidas: true,
+    publicacionId: '',
     pagina: 3,
   })
   assert.equal(leer('estado=TODAS').estado, 'TODAS')
@@ -152,31 +153,41 @@ test('leerFiltrosBandeja: solo "true" enciende solo no leídas', () => {
 })
 
 test('paramsDeBandeja: los valores por defecto no viajan a la URL', () => {
-  assert.deepEqual(paramsDeBandeja({ tipo: '', estado: 'ABIERTA', soloNoLeidas: false, pagina: 1 }), {})
+  assert.deepEqual(paramsDeBandeja({ tipo: '', estado: 'ABIERTA', soloNoLeidas: false, publicacionId: '', pagina: 1 }), {})
   assert.deepEqual(paramsDeBandeja({ tipo: 'COMPRA', estado: 'CERRADA', soloNoLeidas: true, pagina: 2 }), {
     tipo: 'COMPRA',
     estado: 'CERRADA',
     soloNoLeidas: 'true',
     pagina: '2',
   })
-  assert.deepEqual(paramsDeBandeja({ tipo: '', estado: 'TODAS', soloNoLeidas: false, pagina: 1 }), { estado: 'TODAS' })
+  assert.deepEqual(paramsDeBandeja({ tipo: '', estado: 'TODAS', soloNoLeidas: false, publicacionId: '', pagina: 1 }), { estado: 'TODAS' })
 })
 
 test('paramsDeBandeja y leerFiltrosBandeja son inversas', () => {
-  const filtros = { tipo: 'COTIZACION', estado: 'TODAS', soloNoLeidas: true, pagina: 4 }
+  const filtros = { tipo: 'COTIZACION', estado: 'TODAS', soloNoLeidas: true, publicacionId: '', pagina: 4 }
   assert.deepEqual(leer(new URLSearchParams(paramsDeBandeja(filtros)).toString()), filtros)
 })
 
 test('paramsParaApi: TODAS no manda estado y los filtros apagados no viajan', () => {
-  assert.deepEqual(paramsParaApi({ tipo: '', estado: 'TODAS', soloNoLeidas: false, pagina: 1 }), { pagina: 1 })
-  assert.deepEqual(paramsParaApi({ tipo: '', estado: 'ABIERTA', soloNoLeidas: false, pagina: 1 }), {
+  assert.deepEqual(paramsParaApi({ tipo: '', estado: 'TODAS', soloNoLeidas: false, publicacionId: '', pagina: 1 }), { pagina: 1 })
+  assert.deepEqual(paramsParaApi({ tipo: '', estado: 'ABIERTA', soloNoLeidas: false, publicacionId: '', pagina: 1 }), {
     pagina: 1,
     estado: 'ABIERTA',
   })
-  assert.deepEqual(paramsParaApi({ tipo: 'COMPRA', estado: 'CERRADA', soloNoLeidas: true, pagina: 3 }), {
+  assert.deepEqual(paramsParaApi({ tipo: 'COMPRA', estado: 'CERRADA', soloNoLeidas: true, publicacionId: '', pagina: 3 }), {
     pagina: 3,
     tipo: 'COMPRA',
     estado: 'CERRADA',
     soloNoLeidas: true,
   })
+})
+
+test('el filtro por auto de la bandeja viaja a la URL y al back solo si es un id valido', () => {
+  const filtros = leerFiltrosBandeja(new URLSearchParams('publicacionId=15&estado=TODAS'))
+  assert.equal(filtros.publicacionId, '15')
+  assert.equal(paramsDeBandeja(filtros).publicacionId, '15')
+  assert.equal(paramsParaApi(filtros).publicacionId, 15)
+  assert.equal(leerFiltrosBandeja(new URLSearchParams('publicacionId=abc')).publicacionId, '')
+  assert.equal(leerFiltrosBandeja(new URLSearchParams('publicacionId=0')).publicacionId, '')
+  assert.equal('publicacionId' in paramsParaApi(leerFiltrosBandeja(new URLSearchParams(''))), false)
 })
