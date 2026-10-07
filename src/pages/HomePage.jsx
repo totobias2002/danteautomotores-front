@@ -27,6 +27,7 @@ export default function HomePage() {
   const navigate = useNavigate()
   const [publicaciones, setPublicaciones] = useState([])
   const [facetas, setFacetas] = useState(null)
+  const [facetasFallaron, setFacetasFallaron] = useState(false)
   const [filtros, setFiltros] = useState({ marca: '' })
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
@@ -61,7 +62,9 @@ export default function HomePage() {
     const controller = new AbortController()
     api.get('/publicaciones/facetas', { signal: controller.signal })
       .then((res) => setFacetas(res.data))
-      .catch(() => {})
+      .catch((err) => {
+        if (!controller.signal.aborted && err?.code !== 'ERR_CANCELED') setFacetasFallaron(true)
+      })
     return () => controller.abort()
   }, [])
 
@@ -194,6 +197,17 @@ export default function HomePage() {
                 </Link>
               </div>
 
+              {/* Mientras llegan las facetas se reserva el lugar con placeholders, así el hero no se corre. */}
+              {(!facetas && !facetasFallaron) && (
+                <>
+                  <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por presupuesto</p>
+                  <div className="flex flex-wrap gap-2" aria-hidden="true">
+                    {[0, 1, 2, 3].map((i) => (
+                      <span key={i} className="h-[34px] w-40 animate-pulse rounded-full border border-slate-200 bg-white/60" />
+                    ))}
+                  </div>
+                </>
+              )}
               {bandas.length > 1 && (
                 <>
                   <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por presupuesto</p>
