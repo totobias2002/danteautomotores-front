@@ -5,7 +5,6 @@ import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import Paginador from '../components/Paginador.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
-import BotonFlotanteWhatsapp from '../components/BotonFlotanteWhatsapp.jsx'
 import LogoMarca from '../components/LogoMarca.jsx'
 import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 import { aSearchParams, leerFiltros, paramsParaApi } from '../utils/catalogoParams.js'
@@ -108,7 +107,6 @@ export default function AgenciaPage() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#fafaf9]">
-      <BotonFlotanteWhatsapp mensaje={`Hola, quería consultar por un auto de ${agencia.nombre}.`} />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-navy text-white">

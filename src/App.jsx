@@ -2,6 +2,7 @@ import AppRouter from './routes/AppRouter.jsx'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import BannerCuentaIncompleta from './components/BannerCuentaIncompleta.jsx'
+import BotonFlotanteWhatsapp from './components/BotonFlotanteWhatsapp.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
 import DevCambioDeCuenta from './components/DevCambioDeCuenta.jsx' // TEMPORAL: borrar
 
@@ -15,6 +16,7 @@ function App() {
         <AppRouter />
       </div>
       <Footer />
+      <BotonFlotanteWhatsapp />
       <DevCambioDeCuenta /> {/* TEMPORAL: borrar */}
     </div>
   )
