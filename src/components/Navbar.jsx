@@ -28,7 +28,7 @@ export default function Navbar() {
           <Logo />
         </Link>
 
-        <div className="hidden flex-1 items-center justify-center gap-7 text-sm font-bold text-navy-dark/80 md:flex">
+        <div className="hidden flex-1 items-center justify-center gap-7 text-sm font-bold text-navy-dark/80 lg:flex">
           <Link to="/autos" className="transition hover:text-bronze">Comprar tu auto</Link>
           <Link to="/vender" className="transition hover:text-bronze">Vender tu auto</Link>
           {esComprador && (
@@ -84,18 +84,18 @@ export default function Navbar() {
           {usuario ? (
             <button
               onClick={logout}
-              className="hidden rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze md:block"
+              className="hidden rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze lg:block"
             >
               Cerrar sesión
             </button>
           ) : (
             <>
-              <Link to="/login" className="hidden text-sm font-semibold text-slate-500 transition hover:text-bronze md:block">
+              <Link to="/login" className="hidden text-sm font-semibold text-slate-500 transition hover:text-bronze lg:block">
                 Ingresar
               </Link>
               <Link
                 to="/registro"
-                className="hidden rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze md:block"
+                className="hidden rounded-full bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-navy/15 transition hover:-translate-y-0.5 hover:bg-bronze lg:block"
               >
                 Crear cuenta
               </Link>
@@ -107,7 +107,7 @@ export default function Navbar() {
             aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={menuAbierto}
             aria-controls="menu-movil"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-navy-dark/80 transition hover:bg-bronze/10 hover:text-bronze md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-navy-dark/80 transition hover:bg-bronze/10 hover:text-bronze lg:hidden"
           >
             {menuAbierto ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -115,7 +115,7 @@ export default function Navbar() {
       </nav>
 
       {menuAbierto && (
-        <div id="menu-movil" className="border-t border-black/5 bg-cream px-4 pb-5 pt-2 shadow-lg md:hidden">
+        <div id="menu-movil" className="border-t border-black/5 bg-cream px-4 pb-5 pt-2 shadow-lg lg:hidden">
           <Link to="/autos" className={itemMenu}>Comprar tu auto</Link>
           <Link to="/vender" className={itemMenu}>Vender tu auto</Link>
           <Link to="/creditos" className={itemMenu}>Financiación</Link>
