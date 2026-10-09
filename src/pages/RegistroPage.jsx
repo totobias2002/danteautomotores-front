@@ -110,6 +110,7 @@ export default function RegistroPage() {
             loop
             muted
             playsInline
+            preload="none"
             poster="/images/registro-car-poster.jpg"
             aria-label="Video de un auto premium en un garage con iluminación moderna"
             className="absolute inset-0 h-full w-full object-cover"

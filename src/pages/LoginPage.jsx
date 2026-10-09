@@ -59,7 +59,7 @@ export default function LoginPage() {
       <div className="grid grid-cols-1 lg:min-h-[calc(100vh-89px)] lg:grid-cols-[42%_58%]">
         {/* Panel con video */}
         <div className="relative hidden overflow-hidden bg-navy lg:block">
-          <video autoPlay loop muted playsInline poster="/images/login-car-poster.jpg" className="absolute inset-0 h-full w-full object-cover">
+          <video autoPlay loop muted playsInline preload="none" poster="/images/login-car-poster.jpg" className="absolute inset-0 h-full w-full object-cover">
             <source src="/videos/login-car.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-navy/10" />
