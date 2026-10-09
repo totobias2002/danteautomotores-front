@@ -26,9 +26,9 @@ function FilaConversacion({ conversacion }) {
     <li>
       <Link
         to={`/mensajes/${conversacion.id}`}
-        className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-bronze"
+        className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-bronze sm:gap-4 sm:p-4"
       >
-        <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-[#d7d9d7]">
+        <div className="h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-[#d7d9d7] sm:h-16 sm:w-24">
           {foto ? (
             <img src={foto} alt="" loading="lazy" className="h-full w-full object-cover" />
           ) : (
@@ -130,7 +130,7 @@ export default function MisMensajesPage() {
             </Link>
           </div>
         ) : (
-          <ul className="mt-6 grid gap-3">
+          <ul className="mt-6 grid grid-cols-1 gap-3">
             {conversaciones.map((c) => (
               <FilaConversacion key={c.id} conversacion={c} />
             ))}

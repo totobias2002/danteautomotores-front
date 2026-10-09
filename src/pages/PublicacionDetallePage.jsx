@@ -433,7 +433,7 @@ export default function PublicacionDetallePage() {
                   </p>
                 )}
                 {accesoConsulta === 'verificada' ? (
-                  <form onSubmit={handleConsultaSubmit} className="grid gap-3 sm:max-w-md">
+                  <form onSubmit={handleConsultaSubmit} className="grid grid-cols-1 gap-3 sm:max-w-md">
                     <textarea
                       placeholder="Mensaje"
                       aria-label="Mensaje"

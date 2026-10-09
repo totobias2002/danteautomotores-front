@@ -237,7 +237,7 @@ export default function AdminMensajesPage() {
               <p className="mt-3 text-sm text-slate-400">No hay conversaciones con estos filtros.</p>
             </div>
           ) : (
-            <ul className="grid gap-3">
+            <ul className="grid grid-cols-1 gap-3">
               {conversaciones.map((c) => (
                 <FilaConversacion key={c.id} conversacion={c} />
               ))}
