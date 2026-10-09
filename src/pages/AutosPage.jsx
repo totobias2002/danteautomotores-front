@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react'
 import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import FiltroAcordeon from '../components/FiltroAcordeon.jsx'
@@ -127,6 +127,8 @@ export default function AutosPage() {
   // La URL es la ÚNICA fuente de verdad de los filtros, el orden y la página: recargar, compartir el link
   // o apretar "atrás" vuelven exactamente al mismo listado.
   const filtros = useMemo(() => leerFiltros(searchParams), [searchParams])
+  // En el celular los filtros arrancan plegados para ver los autos enseguida; en pantallas grandes siempre se ven.
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
 
   // Los campos con debounce y los efectos de más abajo leen siempre el estado más reciente desde acá:
   // si dos campos confirman casi juntos, el segundo parte de lo que escribió el primero.
@@ -344,20 +346,29 @@ export default function AutosPage() {
           </div>
         )}
 
-        <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:gap-10">
           <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pb-4">
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="mb-1 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-bold text-navy-dark">
+              <div className="flex items-center justify-between lg:mb-1">
+                <button
+                  type="button"
+                  onClick={() => setFiltrosAbiertos((abierto) => !abierto)}
+                  aria-expanded={filtrosAbiertos}
+                  aria-controls="panel-filtros"
+                  className="flex flex-1 items-center gap-2 py-1 text-left text-sm font-bold text-navy-dark lg:pointer-events-none"
+                >
                   <SlidersHorizontal className="h-4 w-4 text-bronze" />
                   Filtros{categoriasActivas > 0 ? ` (${categoriasActivas})` : ''}
-                </div>
+                  <ChevronDown className={`ml-auto h-4 w-4 text-slate-400 transition lg:hidden ${filtrosAbiertos ? 'rotate-180' : ''}`} />
+                </button>
                 {hayFiltrosActivos && (
-                  <button type="button" onClick={limpiarFiltros} className="text-xs font-bold text-bronze hover:underline">
+                  <button type="button" onClick={limpiarFiltros} className="ml-3 text-xs font-bold text-bronze hover:underline">
                     Limpiar
                   </button>
                 )}
               </div>
+
+              <div id="panel-filtros" className={`${filtrosAbiertos ? 'block' : 'hidden'} lg:block`}>
 
               <FiltroAcordeon titulo="Precio" contador={(filtros.precioMin ? 1 : 0) + (filtros.precioMax ? 1 : 0)}>
                 <div className="grid grid-cols-2 gap-2">
@@ -571,6 +582,7 @@ export default function AutosPage() {
               <FiltroAcordeon titulo="Disponibilidad del auto" contador={filtros.estado.length}>
                 <ChipsFiltro opciones={estadosDisponibles} activos={filtros.estado} onToggle={alternar('estado')} />
               </FiltroAcordeon>
+              </div>
             </div>
           </aside>
 

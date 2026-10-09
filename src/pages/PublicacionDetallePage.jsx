@@ -302,9 +302,10 @@ export default function PublicacionDetallePage() {
           )}
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-[1.35fr_1fr]">
-          {/* Galería y contenido principal */}
-          <div>
+        <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr] lg:gap-10">
+          {/* Galería y contenido principal. En el celular el precio y "Lo quiero" suben justo debajo de la galería. */}
+          <div className="contents lg:block">
+            <div className="order-1 lg:order-none">
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#d7d9d7] sm:aspect-video">
               {fotoPrincipal ? (
                 <img
@@ -372,8 +373,11 @@ export default function PublicacionDetallePage() {
               </div>
             )}
 
+            </div>
+
+            <div className="order-3 lg:order-none">
             {/* Ficha técnica */}
-            <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:mt-10">
               <h2 className="mb-5 text-lg font-bold text-navy-dark">Ficha técnica</h2>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
                 <Dato icono={Calendar} etiqueta="Año" valor={publicacion.anio} />
@@ -420,7 +424,7 @@ export default function PublicacionDetallePage() {
 
             {/* Consulta: un auto vendido ya no se consulta (D-06); uno reservado sí, por si la reserva se cae (D-05). */}
             {!vendido && (
-              <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 lg:mt-10">
                 <h2 className="mb-4 text-lg font-bold text-navy-dark">Consultar por este auto</h2>
                 {reservado && (
                   <p className="mb-4 flex items-start gap-2 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
@@ -472,10 +476,11 @@ export default function PublicacionDetallePage() {
                 )}
               </div>
             )}
+            </div>
           </div>
 
           {/* Panel lateral: precio y acciones */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="order-2 lg:sticky lg:top-24 lg:order-none lg:self-start">
             {vendido && (
               <div role="status" className="mb-5 rounded-2xl border border-slate-300 bg-slate-100 p-5">
                 <p className="flex items-center gap-2 text-base font-bold text-navy-dark">

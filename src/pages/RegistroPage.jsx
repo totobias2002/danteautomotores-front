@@ -100,7 +100,7 @@ export default function RegistroPage() {
 
   return (
     <main className="bg-[#fafaf9]">
-      <div className="grid lg:min-h-[calc(100vh-89px)] lg:grid-cols-[42%_58%]">
+      <div className="grid grid-cols-1 lg:min-h-[calc(100vh-89px)] lg:grid-cols-[42%_58%]">
         {/* Panel con video */}
         <div className="relative hidden overflow-hidden bg-navy lg:block">
           <video
