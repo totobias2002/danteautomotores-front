@@ -47,7 +47,7 @@ export default function DevCambioDeCuenta() {
         <div className="w-60 rounded-xl border border-amber-400 bg-white p-3 shadow-xl">
           <div className="flex items-center justify-between">
             <p className="font-bold text-amber-700">DEV: cambiar de cuenta</p>
-            <button type="button" onClick={() => setAbierto(false)} className="text-slate-400 hover:text-slate-700" aria-label="Cerrar">
+            <button type="button" onClick={() => setAbierto(false)} className="text-slate-500 hover:text-slate-700" aria-label="Cerrar">
               ✕
             </button>
           </div>

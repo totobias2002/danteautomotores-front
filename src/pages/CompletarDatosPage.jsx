@@ -182,7 +182,7 @@ export default function CompletarDatosPage() {
               </span>
             </label>
           </div>
-          <p className="-mt-3 text-xs text-slate-400">Corregilos si hace falta: tienen que coincidir con tu DNI.</p>
+          <p className="-mt-3 text-xs text-slate-500">Corregilos si hace falta: tienen que coincidir con tu DNI.</p>
 
           <label className="flex flex-col gap-1.5 text-sm font-bold text-navy-dark">
             Teléfono
@@ -198,7 +198,7 @@ export default function CompletarDatosPage() {
                 required
               />
             </span>
-            <span className="text-xs font-normal text-slate-400">Con el código de área, sin el 0 ni el 15.</span>
+            <span className="text-xs font-normal text-slate-500">Con el código de área, sin el 0 ni el 15.</span>
           </label>
 
           {dniCargado ? (
@@ -213,7 +213,7 @@ export default function CompletarDatosPage() {
                   className="w-full bg-transparent text-base font-semibold text-slate-500 outline-none"
                 />
               </span>
-              <span className="text-xs font-normal text-slate-400">Si hay un error en tu DNI, escribinos.</span>
+              <span className="text-xs font-normal text-slate-500">Si hay un error en tu DNI, escribinos.</span>
             </div>
           ) : (
             <label className="flex flex-col gap-1.5 text-sm font-bold text-navy-dark">
@@ -231,7 +231,7 @@ export default function CompletarDatosPage() {
                   required
                 />
               </span>
-              <span className="text-xs font-normal text-slate-400">7 u 8 números. Una vez guardado no se puede cambiar desde la web.</span>
+              <span className="text-xs font-normal text-slate-500">7 u 8 números. Una vez guardado no se puede cambiar desde la web.</span>
             </label>
           )}
 
@@ -241,7 +241,7 @@ export default function CompletarDatosPage() {
             </p>
           )}
 
-          <p className="text-xs leading-relaxed text-slate-400">
+          <p className="text-xs leading-relaxed text-slate-500">
             Usamos estos datos para identificarte cuando comprás o cotizás. Más información en la{' '}
             <Link to="/privacidad" className="font-semibold text-bronze hover:underline">
               política de privacidad

@@ -9,7 +9,7 @@ function fechaSinHora(iso) {
 function Dato({ titulo, children }) {
   return (
     <div>
-      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{titulo}</dt>
+      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{titulo}</dt>
       <dd className="mt-0.5 text-sm font-semibold text-navy-dark">{children}</dd>
     </div>
   )
@@ -25,7 +25,7 @@ export default function PerfilDelUsuario({ ficha, columnas = false }) {
       <Dato titulo="Mail">
         <span className="break-all">{ficha.email}</span>
         <span
-          className={`ml-2 rounded-full px-2.5 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wider ${
+          className={`ml-2 rounded-full px-2.5 py-0.5 align-middle text-[11px] font-bold uppercase tracking-wider ${
             ficha.emailConfirmado ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
           }`}
         >
@@ -38,12 +38,12 @@ export default function PerfilDelUsuario({ ficha, columnas = false }) {
             {ficha.telefono}
           </a>
         ) : (
-          <span className="font-normal text-slate-400">Sin cargar</span>
+          <span className="font-normal text-slate-500">Sin cargar</span>
         )}
       </Dato>
-      <Dato titulo="DNI">{ficha.dni || <span className="font-normal text-slate-400">Sin cargar</span>}</Dato>
+      <Dato titulo="DNI">{ficha.dni || <span className="font-normal text-slate-500">Sin cargar</span>}</Dato>
       <Dato titulo="Cliente desde">
-        {fechaSinHora(ficha.fechaRegistro) || <span className="font-normal text-slate-400">Sin dato</span>}
+        {fechaSinHora(ficha.fechaRegistro) || <span className="font-normal text-slate-500">Sin dato</span>}
       </Dato>
       <Dato titulo="Estado de la cuenta">
         {ficha.cuentaVerificada ? (

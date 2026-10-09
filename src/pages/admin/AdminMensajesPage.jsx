@@ -55,17 +55,17 @@ function FilaConversacion({ conversacion }) {
             <p className="truncate text-base font-bold text-navy-dark">{quien}</p>
             <p className="truncate text-sm text-slate-500">{auto}</p>
           </div>
-          <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-400">
+          <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-500">
             <BadgeNoLeidos cantidad={conversacion.noLeidos} />
             {fechaDeMensaje(conversacion.ultimoMensajeEn)}
           </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
             {etiquetaTipo(conversacion.tipo)}
           </span>
           {estado && (
-            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estado.clase}`}>
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${estado.clase}`}>
               {estado.texto}
             </span>
           )}
@@ -148,7 +148,7 @@ export default function AdminMensajesPage() {
   return (
     <main className="min-h-screen bg-[#fafaf9] py-10">
       <div className="mx-auto max-w-4xl px-4">
-        <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 transition hover:text-bronze">
+        <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 transition hover:text-bronze">
           <ArrowLeft className="h-3.5 w-3.5" /> Volver al panel
         </Link>
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-bronze">Panel</p>
@@ -213,7 +213,7 @@ export default function AdminMensajesPage() {
 
         <section className="mt-6">
           {cargando && !pagina ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
               Cargando...
             </p>
           ) : error ? (
@@ -228,13 +228,13 @@ export default function AdminMensajesPage() {
               </button>
             </div>
           ) : cargando ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
               Cargando...
             </p>
           ) : conversaciones.length === 0 ? (
             <div className="flex flex-col items-center rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center">
               <MessageSquare className="h-8 w-8 text-slate-300" />
-              <p className="mt-3 text-sm text-slate-400">No hay conversaciones con estos filtros.</p>
+              <p className="mt-3 text-sm text-slate-500">No hay conversaciones con estos filtros.</p>
             </div>
           ) : (
             <ul className="grid grid-cols-1 gap-3">

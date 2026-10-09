@@ -47,7 +47,7 @@ export default function AdminSolicitudesVentaPage() {
   return (
     <main className="min-h-screen bg-[#fafaf9] py-10">
       <div className="mx-auto max-w-5xl px-4">
-        <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 transition hover:text-bronze">
+        <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 transition hover:text-bronze">
           <ArrowLeft className="h-3.5 w-3.5" /> Volver al panel
         </Link>
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-bronze">Panel</p>
@@ -58,11 +58,11 @@ export default function AdminSolicitudesVentaPage() {
 
         <section className="mt-8">
           {cargando ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
               Cargando...
             </p>
           ) : solicitudes.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
               Todavía no hay solicitudes de venta.
             </p>
           ) : (
@@ -95,7 +95,7 @@ export default function AdminSolicitudesVentaPage() {
                         {s.ciudad ? ` · ${s.ciudad}` : ''}
                       </p>
                       {s.descripcion && <p className="mt-1 max-w-lg text-sm text-slate-500">{s.descripcion}</p>}
-                      <p className="mt-2 text-[11px] text-slate-400">
+                      <p className="mt-2 text-[11px] text-slate-500">
                         {s.fecha ? new Date(s.fecha).toLocaleString('es-AR') : ''}
                       </p>
                     </div>

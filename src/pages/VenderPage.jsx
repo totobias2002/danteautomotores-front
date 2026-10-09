@@ -467,7 +467,7 @@ export default function VenderPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {COMO_FUNCIONA.map(({ icono: Icono, titulo, texto }, i) => (
               <div key={titulo} className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bronze/10 text-bronze">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bronze/10 text-bronze">
                   <Icono className="h-4.5 w-4.5" />
                 </span>
                 <div>

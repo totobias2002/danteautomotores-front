@@ -34,7 +34,7 @@ export default function LogoMarca({ marca }) {
           className="max-h-12 max-w-[75%] object-contain grayscale-[35%] opacity-80 transition duration-200 ease-out hover:grayscale-0 hover:opacity-100"
         />
       ) : (
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy/5 text-[10px] font-bold text-bronze">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy/5 text-[11px] font-bold text-bronze">
           {marca.charAt(0)}
         </span>
       )}

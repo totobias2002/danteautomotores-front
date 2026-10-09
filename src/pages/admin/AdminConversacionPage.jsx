@@ -41,7 +41,7 @@ function EncabezadoDeLaConversacion({ conversacion, onEstadoDelAuto }) {
             {foto ? (
               <img src={foto} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">Sin foto</div>
+              <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">Sin foto</div>
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -54,7 +54,7 @@ function EncabezadoDeLaConversacion({ conversacion, onEstadoDelAuto }) {
               </p>
             )}
             {estadoDelAuto && (
-              <span className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
+              <span className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
                 {estadoDelAuto.texto}
               </span>
             )}
@@ -73,11 +73,11 @@ function EncabezadoDeLaConversacion({ conversacion, onEstadoDelAuto }) {
       )}
 
       <div className={`${publicacion ? 'mt-3 ' : ''}flex flex-wrap items-center gap-1.5`}>
-        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
           {etiquetaTipo(conversacion.tipo)}
         </span>
         {estadoDeLaConversacion && (
-          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estadoDeLaConversacion.clase}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${estadoDeLaConversacion.clase}`}>
             {estadoDeLaConversacion.texto}
           </span>
         )}
@@ -244,7 +244,7 @@ export default function AdminConversacionPage() {
         </Link>
 
         {cargando ? (
-          <p className="mt-10 text-center text-slate-400">Cargando...</p>
+          <p className="mt-10 text-center text-slate-500">Cargando...</p>
         ) : noEncontrada ? (
           <div className="mt-10 text-center">
             <p className="text-base font-semibold text-navy-dark">No encontramos esta conversación</p>

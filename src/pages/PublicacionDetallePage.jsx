@@ -48,7 +48,7 @@ function Dato({ icono: Icono, etiqueta, valor }) {
     <div className="flex items-start gap-2.5">
       <Icono className="mt-0.5 h-4 w-4 shrink-0 text-bronze" />
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{etiqueta}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{etiqueta}</p>
         <p className="text-sm font-bold text-navy-dark">{valor}</p>
       </div>
     </div>
@@ -263,7 +263,7 @@ export default function PublicacionDetallePage() {
   }
 
   if (cargando) {
-    return <main className="mx-auto max-w-7xl px-6 py-24 text-center text-slate-400 lg:px-10">Cargando...</main>
+    return <main className="mx-auto max-w-7xl px-6 py-24 text-center text-slate-500 lg:px-10">Cargando...</main>
   }
 
   if (errorCarga || !publicacion) {
@@ -316,12 +316,12 @@ export default function PublicacionDetallePage() {
                   className={`h-full w-full object-cover${vendido ? ' opacity-80' : ''}`}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">Sin foto</div>
+                <div className="flex h-full w-full items-center justify-center text-sm text-slate-500">Sin foto</div>
               )}
 
               {badge && (
                 <span
-                  className={`absolute left-4 top-4 flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider shadow-sm ${badge.clase}`}
+                  className={`absolute left-4 top-4 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider shadow-sm ${badge.clase}`}
                 >
                   {badge.Icono && <badge.Icono className="h-3 w-3" />} {badge.texto}
                 </span>
@@ -333,7 +333,7 @@ export default function PublicacionDetallePage() {
                     type="button"
                     onClick={() => setFotoActiva((i) => (i - 1 + fotos.length) % fotos.length)}
                     aria-label="Foto anterior"
-                    className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy shadow transition hover:bg-white"
+                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy shadow transition hover:bg-white"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
@@ -341,7 +341,7 @@ export default function PublicacionDetallePage() {
                     type="button"
                     onClick={() => setFotoActiva((i) => (i + 1) % fotos.length)}
                     aria-label="Foto siguiente"
-                    className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy shadow transition hover:bg-white"
+                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy shadow transition hover:bg-white"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
@@ -418,7 +418,7 @@ export default function PublicacionDetallePage() {
               {/* Texto plano: React lo escapa, nunca se interpreta como HTML. */}
               <p className="whitespace-pre-line leading-7 text-slate-600">{descripcion}</p>
               {publicacion.agenciaNombre && (
-                <p className="mt-4 text-sm font-semibold text-slate-400">
+                <p className="mt-4 text-sm font-semibold text-slate-500">
                   Vendido por {publicacion.agenciaNombre}
                 </p>
               )}
@@ -510,7 +510,7 @@ export default function PublicacionDetallePage() {
                   type="button"
                   onClick={compartir}
                   aria-label="Compartir"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-navy transition hover:border-bronze hover:text-bronze"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-navy transition hover:border-bronze hover:text-bronze"
                 >
                   <Share2 className="h-4 w-4" />
                 </button>
@@ -520,7 +520,7 @@ export default function PublicacionDetallePage() {
                   aria-label={favoritoOk ? 'Quitar de favoritos' : 'Guardar en favoritos'}
                   aria-pressed={favoritoOk}
                   disabled={guardandoFavorito}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition disabled:opacity-60 ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border transition disabled:opacity-60 ${
                     favoritoOk ? 'border-bronze bg-bronze text-white' : 'border-slate-200 text-navy hover:border-bronze hover:text-bronze'
                   }`}
                 >
@@ -541,15 +541,15 @@ export default function PublicacionDetallePage() {
 
             <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Precio de contado</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Precio de contado</p>
                 {esOferta && (
-                  <span className="flex items-center gap-1 rounded-full bg-bronze px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                  <span className="flex items-center gap-1 rounded-full bg-bronze px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
                     <TrendingUp className="h-3 w-3" /> Oferta
                   </span>
                 )}
               </div>
               {esOferta && (
-                <p className="mt-1 text-base font-semibold text-slate-400 line-through">
+                <p className="mt-1 text-base font-semibold text-slate-500 line-through">
                   {simbolo} {formatoNumero(publicacion.precioAnterior)}
                 </p>
               )}
@@ -562,7 +562,7 @@ export default function PublicacionDetallePage() {
             {!vendido && (
               <>
                 <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Precio financiando 50% o más</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Precio financiando 50% o más</p>
                   <p className="mt-1 text-2xl font-bold text-navy-dark">
                     {simbolo} {formatoNumero(publicacion.precio)}
                   </p>
@@ -608,7 +608,7 @@ export default function PublicacionDetallePage() {
             )}
 
             {avisoCuenta && (
-              <p className="mt-3 text-center text-xs font-semibold text-slate-400">
+              <p className="mt-3 text-center text-xs font-semibold text-slate-500">
                 Esta función todavía no está conectada — muy pronto vas a poder completarla desde acá.
               </p>
             )}
@@ -619,7 +619,7 @@ export default function PublicacionDetallePage() {
               </p>
             )}
 
-            <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-slate-400">
+            <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-slate-500">
               <ShieldCheck className="h-4 w-4 text-bronze" /> Auto verificado por DanteAutomotores
             </div>
           </div>

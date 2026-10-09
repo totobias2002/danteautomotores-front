@@ -319,7 +319,7 @@ export default function PerfilPage() {
                       className="w-full bg-transparent text-base font-semibold text-slate-500 outline-none"
                     />
                   </span>
-                  <span className="text-xs font-normal text-slate-400">Si hay un error en tu DNI, escribinos.</span>
+                  <span className="text-xs font-normal text-slate-500">Si hay un error en tu DNI, escribinos.</span>
                 </div>
               )}
 
@@ -376,7 +376,7 @@ export default function PerfilPage() {
                     required
                   />
                 </span>
-                <span className="text-xs font-normal text-slate-400">De 8 a 72 caracteres.</span>
+                <span className="text-xs font-normal text-slate-500">De 8 a 72 caracteres.</span>
               </label>
               <label className="flex flex-col gap-1.5 text-sm font-bold text-navy-dark">
                 Repetí la contraseña nueva

@@ -122,7 +122,7 @@ export default function ConfirmarEmailPage() {
                       {errorReenvio}
                     </p>
                   )}
-                  <p className="text-sm text-slate-400">Revisá también la carpeta de spam.</p>
+                  <p className="text-sm text-slate-500">Revisá también la carpeta de spam.</p>
                 </>
               ) : (
                 <Link

@@ -31,7 +31,7 @@ const PrivacidadPage = lazy(() => import('../pages/PrivacidadPage.jsx'))
 
 export default function AppRouter() {
   return (
-    <Suspense fallback={<p className="py-24 text-center text-slate-400">Cargando...</p>}>
+    <Suspense fallback={<p className="py-24 text-center text-slate-500">Cargando...</p>}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/autos" element={<AutosPage />} />

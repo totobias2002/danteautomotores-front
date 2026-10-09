@@ -22,7 +22,7 @@ function EncabezadoDelAuto({ conversacion }) {
   if (!publicacion) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-4">
-        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
           {etiquetaTipo(conversacion.tipo)}
         </span>
       </div>
@@ -40,7 +40,7 @@ function EncabezadoDelAuto({ conversacion }) {
         {foto ? (
           <img src={foto} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">Sin foto</div>
+          <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">Sin foto</div>
         )}
       </div>
       <div className="min-w-0 flex-1">
@@ -54,11 +54,11 @@ function EncabezadoDelAuto({ conversacion }) {
         )}
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {estadoDelAuto && (
-            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
               {estadoDelAuto.texto}
             </span>
           )}
-          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
             {etiquetaTipo(conversacion.tipo)}
           </span>
         </div>
@@ -180,7 +180,7 @@ export default function ConversacionPage() {
         </Link>
 
         {cargando ? (
-          <p className="mt-10 text-center text-slate-400">Cargando...</p>
+          <p className="mt-10 text-center text-slate-500">Cargando...</p>
         ) : noEncontrada ? (
           <div className="mt-10 text-center">
             <p className="text-base font-semibold text-navy-dark">No encontramos esta conversación</p>

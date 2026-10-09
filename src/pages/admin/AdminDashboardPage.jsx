@@ -283,7 +283,7 @@ export default function AdminDashboardPage() {
           {errorAgencias && <p className="mb-3 text-sm font-semibold text-red-600">{errorAgencias}</p>}
 
           {agencias.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
               Todavía no hay agencias cargadas.
             </p>
           ) : (
@@ -355,8 +355,8 @@ export default function AdminDashboardPage() {
                     className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3"
                   >
                     <span className="flex items-center gap-2.5 text-sm font-semibold text-navy-dark">
-                      <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
-                      {a.nombre} <span className="font-normal text-slate-400">/{a.slug}</span>
+                      <Building2 className="h-4 w-4 shrink-0 text-slate-500" />
+                      {a.nombre} <span className="font-normal text-slate-500">/{a.slug}</span>
                       {a.zona && (
                         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-500">
                           {ZONA[a.zona] ?? a.zona}
@@ -368,7 +368,7 @@ export default function AdminDashboardPage() {
                         type="button"
                         onClick={() => comenzarEdicionAgencia(a)}
                         aria-label="Editar agencia"
-                        className="text-slate-400 transition hover:text-bronze"
+                        className="text-slate-500 transition hover:text-bronze"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -395,7 +395,7 @@ export default function AdminDashboardPage() {
                           type="button"
                           onClick={() => setAgenciaAEliminar(a.id)}
                           aria-label="Eliminar agencia"
-                          className="text-slate-400 transition hover:text-red-600"
+                          className="text-slate-500 transition hover:text-red-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -436,7 +436,7 @@ export default function AdminDashboardPage() {
               </button>
             ))}
             <label className="flex flex-1 items-center gap-2 rounded-xl border border-slate-200 px-3 py-1.5 transition focus-within:border-bronze sm:min-w-[220px]">
-              <Search className="h-4 w-4 shrink-0 text-slate-400" />
+              <Search className="h-4 w-4 shrink-0 text-slate-500" />
               <input
                 type="text"
                 aria-label="Buscar por marca o modelo"
@@ -452,11 +452,11 @@ export default function AdminDashboardPage() {
           {errorAccion && <p className="mb-3 text-sm font-semibold text-red-600">{errorAccion}</p>}
 
           {publicaciones.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
               Todavía no hay autos publicados.
             </p>
           ) : publicacionesFiltradas.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+            <p className="rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
               No hay autos que coincidan con el filtro.
             </p>
           ) : (
@@ -471,7 +471,7 @@ export default function AdminDashboardPage() {
                     <MiniaturaPublicacion key={fotoDePortada(p.fotos)?.url ?? 'sin-fotos'} publicacion={p} />
                     <span className="min-w-0 text-sm font-semibold text-navy-dark">
                       {p.marca} {p.modelo} · {p.anio} — {p.moneda} {Number(p.precio).toLocaleString('es-AR')}{' '}
-                      <span className="font-normal text-slate-400">({p.agenciaNombre})</span>
+                      <span className="font-normal text-slate-500">({p.agenciaNombre})</span>
                       {p.destacado && (
                         <span className="ml-2 rounded-full bg-bronze/10 px-2 py-0.5 text-[11px] font-bold text-bronze">
                           Destacado
@@ -513,7 +513,7 @@ export default function AdminDashboardPage() {
                     <Link
                       to={`/admin/publicaciones/${p.id}/editar`}
                       aria-label="Editar publicación"
-                      className="text-slate-400 transition hover:text-bronze"
+                      className="text-slate-500 transition hover:text-bronze"
                     >
                       <Pencil className="h-4 w-4" />
                     </Link>
@@ -521,7 +521,7 @@ export default function AdminDashboardPage() {
                       type="button"
                       onClick={() => pedirEliminacion(p)}
                       aria-label="Eliminar publicación"
-                      className="text-slate-400 transition hover:text-red-600"
+                      className="text-slate-500 transition hover:text-red-600"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

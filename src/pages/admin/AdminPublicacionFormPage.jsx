@@ -390,7 +390,7 @@ export default function AdminPublicacionFormPage() {
               ))}
             </Select>
             {agencias.length === 0 && (
-              <p className="mt-2 text-xs font-semibold text-slate-400">
+              <p className="mt-2 text-xs font-semibold text-slate-500">
                 Todavía no cargaste ninguna agencia — creá una primero desde el panel.
               </p>
             )}
@@ -450,11 +450,11 @@ export default function AdminPublicacionFormPage() {
                     onChange={(e) => setForm({ ...form, kilometraje: acotarKm(e.target.value) })}
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
                   />
-                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500">
                     km
                   </span>
                 </div>
-                <span className="mt-1 text-[11px] text-slate-400">Hasta {KM_MAXIMO.toLocaleString('es-AR')} km</span>
+                <span className="mt-1 text-[11px] text-slate-500">Hasta {KM_MAXIMO.toLocaleString('es-AR')} km</span>
               </label>
               <Select label="Tipo de carrocería" {...campo('tipoCarroceria')}>
                 <option value="">Sin especificar</option>
@@ -551,7 +551,7 @@ export default function AdminPublicacionFormPage() {
                 onChange={(e) => setForm({ ...form, precioAnterior: e.target.value.replace(/\D/g, '') })}
                 className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
               />
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500">
                 Si es mayor al precio, el auto aparece como oferta con el precio anterior tachado.
               </span>
               {sinOferta && (
@@ -614,11 +614,11 @@ function FotosGrid({ fotos, subiendoFoto, onSubir, onEliminar, onMover, onHacerP
 
   return (
     <div>
-      <p className="mb-1 text-xs font-semibold text-slate-400">
+      <p className="mb-1 text-xs font-semibold text-slate-500">
         {cantidad}/{max} fotos {llegoAlMaximo && '— llegaste al máximo por auto'}
       </p>
       {cantidad > 1 && (
-        <p className="mb-3 text-xs text-slate-400">La primera foto es la portada. Usá las flechas para ordenarlas.</p>
+        <p className="mb-3 text-xs text-slate-500">La primera foto es la portada. Usá las flechas para ordenarlas.</p>
       )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {fotos?.map((foto, indice) => (
@@ -676,7 +676,7 @@ function FotosGrid({ fotos, subiendoFoto, onSubir, onEliminar, onMover, onHacerP
           </div>
         ))}
         {!llegoAlMaximo && (
-          <label className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 text-slate-400 transition hover:border-bronze hover:text-bronze">
+          <label className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 transition hover:border-bronze hover:text-bronze">
             {subiendoFoto ? <Loader2 className="h-6 w-6 animate-spin" /> : <ImagePlus className="h-6 w-6" />}
             <span className="text-xs font-semibold">{subiendoFoto ? 'Subiendo...' : 'Agregar fotos'}</span>
             <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={onSubir} className="hidden" disabled={subiendoFoto} />

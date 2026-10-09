@@ -27,17 +27,17 @@ function FilaDelHistorial({ conversacion }) {
       >
         <div className="flex items-start justify-between gap-3">
           <p className="min-w-0 truncate text-base font-bold text-navy-dark">{auto}</p>
-          <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-400">
+          <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-500">
             <BadgeNoLeidos cantidad={conversacion.noLeidos} />
             {fechaDeMensaje(conversacion.ultimoMensajeEn)}
           </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
             {etiquetaTipo(conversacion.tipo)}
           </span>
           {estado && (
-            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estado.clase}`}>
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${estado.clase}`}>
               {estado.texto}
             </span>
           )}
@@ -101,7 +101,7 @@ export default function AdminUsuarioPage() {
         </Link>
 
         {cargando ? (
-          <p className="mt-10 text-center text-slate-400">Cargando...</p>
+          <p className="mt-10 text-center text-slate-500">Cargando...</p>
         ) : noEncontrado ? (
           <div className="mt-10 text-center">
             <p className="text-base font-semibold text-navy-dark">No encontramos al usuario</p>
@@ -132,7 +132,7 @@ export default function AdminUsuarioPage() {
             <section className="mt-8">
               <h2 className="text-lg font-bold text-navy-dark">Historial de conversaciones</h2>
               {conversaciones.length === 0 ? (
-                <p className="mt-3 rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-400">
+                <p className="mt-3 rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-sm text-slate-500">
                   Todavía no tiene conversaciones.
                 </p>
               ) : (

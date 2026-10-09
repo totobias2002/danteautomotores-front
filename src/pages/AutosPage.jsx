@@ -72,7 +72,7 @@ function useCampoConDebounce(valorUrl, alConfirmar) {
 }
 
 function ChipsFiltro({ opciones, activos, onToggle }) {
-  if (opciones.length === 0) return <p className="text-xs text-slate-400">Sin opciones por ahora</p>
+  if (opciones.length === 0) return <p className="text-xs text-slate-500">Sin opciones por ahora</p>
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -117,7 +117,7 @@ function ChipMarcaLogo({ marca, activa, onToggle }) {
           className={`max-h-8 max-w-[80%] object-contain transition ${activa ? '' : 'grayscale-[35%] opacity-70'}`}
         />
       ) : (
-        <span className="text-[10px] font-bold text-bronze">{marca}</span>
+        <span className="text-[11px] font-bold text-bronze">{marca}</span>
       )}
     </button>
   )
@@ -309,7 +309,7 @@ export default function AutosPage() {
   return (
     <main className="min-h-screen bg-[#fafaf9]">
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Autos usados</p>
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Autos usados</p>
 
         <div className="mb-8 flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-5 py-4 shadow-sm shadow-navy/5">
           <Search className="h-5 w-5 shrink-0 text-bronze" />
@@ -361,7 +361,7 @@ export default function AutosPage() {
                 >
                   <SlidersHorizontal className="h-4 w-4 text-bronze" />
                   Filtros{categoriasActivas > 0 ? ` (${categoriasActivas})` : ''}
-                  <ChevronDown className={`ml-auto h-4 w-4 text-slate-400 transition lg:hidden ${filtrosAbiertos ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`ml-auto h-4 w-4 text-slate-500 transition lg:hidden ${filtrosAbiertos ? 'rotate-180' : ''}`} />
                 </button>
                 {hayFiltrosActivos && (
                   <button type="button" onClick={limpiarFiltros} className="ml-3 text-xs font-bold text-bronze hover:underline">
@@ -375,7 +375,7 @@ export default function AutosPage() {
               <FiltroAcordeon titulo="Precio" contador={(filtros.precioMin ? 1 : 0) + (filtros.precioMax ? 1 : 0)}>
                 <div className="grid grid-cols-2 gap-2">
                   <label className="flex min-w-0 items-center gap-1 rounded-xl border border-slate-200 px-2 py-2 transition focus-within:border-bronze">
-                    <span className="shrink-0 text-xs font-bold text-slate-400">$</span>
+                    <span className="shrink-0 text-xs font-bold text-slate-500">$</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -387,7 +387,7 @@ export default function AutosPage() {
                     />
                   </label>
                   <label className="flex min-w-0 items-center gap-1 rounded-xl border border-slate-200 px-2 py-2 transition focus-within:border-bronze">
-                    <span className="shrink-0 text-xs font-bold text-slate-400">$</span>
+                    <span className="shrink-0 text-xs font-bold text-slate-500">$</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -515,7 +515,7 @@ export default function AutosPage() {
 
               <FiltroAcordeon titulo="Marca" contador={filtros.marca.length}>
                 {marcasDisponibles.length === 0 ? (
-                  <p className="text-xs text-slate-400">Sin opciones por ahora</p>
+                  <p className="text-xs text-slate-500">Sin opciones por ahora</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {marcasDisponibles.map(({ value }) => (

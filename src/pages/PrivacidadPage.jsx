@@ -77,7 +77,7 @@ export default function PrivacidadPage() {
             reclamos que interpongan quienes resulten afectados en sus derechos por incumplimiento de las normas vigentes
             en materia de protección de datos personales.
           </p>
-          <p className="mt-2 text-xs text-slate-400">Este texto debe ser validado por un profesional.</p>
+          <p className="mt-2 text-xs text-slate-500">Este texto debe ser validado por un profesional.</p>
         </section>
       </div>
     </main>

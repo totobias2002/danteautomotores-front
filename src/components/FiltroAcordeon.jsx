@@ -15,13 +15,13 @@ export default function FiltroAcordeon({ titulo, children, abiertoPorDefecto = f
         <span className={`flex items-center gap-2 ${activo ? 'text-bronze' : 'text-navy-dark'}`}>
           {titulo}
           {activo && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-bronze px-1 text-[10px] font-bold text-white">
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-bronze px-1 text-[11px] font-bold text-white">
               {contador}
             </span>
           )}
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-300 ease-in-out ${
+          className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-300 ease-in-out ${
             abierto ? 'rotate-180' : ''
           }`}
         />

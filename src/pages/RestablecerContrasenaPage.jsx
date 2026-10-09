@@ -68,7 +68,7 @@ export default function RestablecerContrasenaPage() {
           ) : (
             <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
               <label className={CLASE_CAMPO}>
-                <Lock className="h-5 w-5 shrink-0 text-slate-400" />
+                <Lock className="h-5 w-5 shrink-0 text-slate-500" />
                 <input
                   type={mostrarPassword ? 'text' : 'password'}
                   placeholder="Contraseña nueva"
@@ -82,15 +82,15 @@ export default function RestablecerContrasenaPage() {
                   type="button"
                   onClick={() => setMostrarPassword((v) => !v)}
                   aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  className="shrink-0 text-slate-400 transition hover:text-bronze"
+                  className="shrink-0 text-slate-500 transition hover:text-bronze"
                 >
                   {mostrarPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </label>
-              <p className="-mt-3 px-1 text-sm text-slate-400">Entre 8 y 72 caracteres</p>
+              <p className="-mt-3 px-1 text-sm text-slate-500">Entre 8 y 72 caracteres</p>
 
               <label className={CLASE_CAMPO}>
-                <Lock className="h-5 w-5 shrink-0 text-slate-400" />
+                <Lock className="h-5 w-5 shrink-0 text-slate-500" />
                 <input
                   type={mostrarPassword ? 'text' : 'password'}
                   placeholder="Repetí la contraseña"

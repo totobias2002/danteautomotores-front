@@ -33,24 +33,24 @@ function FilaConversacion({ conversacion }) {
           {foto ? (
             <img src={foto} alt="" loading="lazy" className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">Sin foto</div>
+            <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">Sin foto</div>
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <h2 className="truncate text-base font-bold text-navy-dark">{titulo}</h2>
-            <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-400">
+            <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-500">
               <BadgeNoLeidos cantidad={conversacion.noLeidos} />
               {fechaDeMensaje(conversacion.ultimoMensajeEn)}
             </span>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {estadoDelAuto && (
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
+              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${estadoDelAuto.clase}`}>
                 {estadoDelAuto.texto}
               </span>
             )}
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
               {etiquetaTipo(conversacion.tipo)}
             </span>
           </div>
@@ -108,7 +108,7 @@ export default function MisMensajesPage() {
         <h1 className="text-2xl font-bold text-navy-dark">Mis mensajes</h1>
 
         {cargando ? (
-          <p className="mt-10 text-center text-slate-400">Cargando...</p>
+          <p className="mt-10 text-center text-slate-500">Cargando...</p>
         ) : error ? (
           <div className="mt-10 text-center">
             <p role="alert" className="text-sm font-semibold text-red-600">{error}</p>

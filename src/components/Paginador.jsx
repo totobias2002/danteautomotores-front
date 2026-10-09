@@ -19,7 +19,7 @@ export default function Paginador({ pagina, totalPaginas, onCambiar }) {
 
       {paginasVisibles(pagina, totalPaginas).map((item, i) =>
         item === '…' ? (
-          <span key={`salto-${i}`} aria-hidden="true" className="px-1 text-xs font-bold text-slate-400">
+          <span key={`salto-${i}`} aria-hidden="true" className="px-1 text-xs font-bold text-slate-500">
             …
           </span>
         ) : item === pagina ? (

@@ -101,7 +101,7 @@ export default function HiloDeMensajes({
                     {!propio && etiquetaDelOtro && <p className="text-xs font-bold text-bronze">{etiquetaDelOtro}</p>}
                     {/* Texto de React: se escapa solo, nunca se interpreta como HTML. */}
                     <p className="whitespace-pre-line break-words text-[15px] leading-snug">{m.texto}</p>
-                    <p className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-slate-400">
+                    <p className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-slate-500">
                       {soloHora(m.creadoEn)}
                       {propio &&
                         (m.leido ? (
@@ -145,7 +145,7 @@ export default function HiloDeMensajes({
                 <SendHorizontal className="h-5 w-5" />
               </button>
             </div>
-            <div className="mt-1 flex items-center justify-between px-2 text-[11px] text-slate-400">
+            <div className="mt-1 flex items-center justify-between px-2 text-[11px] text-slate-500">
               <span className="hidden sm:inline">Enter para enviar · Shift + Enter para un salto de línea</span>
               <span className="font-semibold text-bronze">{texto.length > AVISO_DESDE ? `${texto.length}/${MAXIMO}` : ''}</span>
             </div>

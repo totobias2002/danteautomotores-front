@@ -35,12 +35,12 @@ export default function PublicacionCard({ publicacion }) {
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">Sin foto</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-slate-500">Sin foto</div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent" />
 
         <span
-          className={`absolute left-4 top-4 flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+          className={`absolute left-4 top-4 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider shadow-sm ${
             estadoBadge ? estadoBadge.clase : mostrarOferta ? 'bg-bronze text-white' : 'bg-white/90 text-navy'
           }`}
         >
@@ -62,12 +62,12 @@ export default function PublicacionCard({ publicacion }) {
         <p className="text-lg font-bold tracking-tight text-navy-dark">
           {publicacion.marca} <span className="text-bronze">•</span> {publicacion.modelo}
         </p>
-        <p className="mt-1 text-xs text-slate-400">{specs.join(' · ')}</p>
+        <p className="mt-1 text-sm text-slate-500">{specs.join(' · ')}</p>
 
         <div className="mt-4 border-t border-slate-100 pt-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Precio de contado</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Precio de contado</p>
           {mostrarOferta && (
-            <p className="mt-0.5 text-sm font-semibold text-slate-400 line-through">
+            <p className="mt-0.5 text-sm font-semibold text-slate-500 line-through">
               {simbolo} {formatoNumero(publicacion.precioAnterior)}
             </p>
           )}
@@ -77,7 +77,7 @@ export default function PublicacionCard({ publicacion }) {
         </div>
 
         {lugar && (
-          <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+          <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
             <MapPin className="h-3.5 w-3.5 text-bronze" /> {lugar}
           </p>
         )}
