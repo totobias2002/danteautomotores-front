@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import BotonGoogle, { googleDisponible } from '../components/BotonGoogle.jsx'
 import { destinoPostLogin, esDniValido, normalizarDni, sanitizarDestino, validarTelefonoBasico } from '../utils/cuenta.js'
 import { mensajeDeError } from '../utils/errores.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 const BENEFICIOS = [
   'Creá tu cuenta en menos de un minuto',
@@ -32,6 +33,7 @@ function PieDeCampo({ id, ayuda, error }) {
 }
 
 export default function RegistroPage() {
+  useTitulo('Crear cuenta')
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
   const [email, setEmail] = useState('')

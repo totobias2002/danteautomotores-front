@@ -28,6 +28,7 @@ import { destinoDeGate, evaluarAcceso } from '../utils/cuenta.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import { TRANSFORMACION_DETALLE, TRANSFORMACION_MINIATURA, urlMiniatura } from '../utils/cloudinary.js'
 import { mensajeDeError } from '../utils/errores.js'
+import useTitulo from '../hooks/useTitulo.js'
 import {
   COMBUSTIBLE,
   CONDICION,
@@ -62,6 +63,7 @@ export default function PublicacionDetallePage() {
   const exigir = useExigirCuenta()
 
   const [publicacion, setPublicacion] = useState(null)
+  useTitulo(publicacion ? `${publicacion.marca} ${publicacion.modelo} ${publicacion.anio}` : '')
   const [cargando, setCargando] = useState(true)
   const [errorCarga, setErrorCarga] = useState('')
   const [similares, setSimilares] = useState([])

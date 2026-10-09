@@ -15,6 +15,7 @@ import api from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 import { CIUDADES, KM_MAXIMO, MARCAS, MODELOS_SUGERIDOS } from '../constants/vehiculo.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 const ANIO_ACTUAL = new Date().getFullYear()
 const ANIOS = Array.from({ length: 25 }, (_, i) => ANIO_ACTUAL - i)
@@ -77,6 +78,7 @@ const COMO_FUNCIONA = [
 ]
 
 export default function VenderPage() {
+  useTitulo('Vendé tu auto')
   const { refrescarUsuario } = useAuth()
   const [paso, setPaso] = useState(1)
   const [datosAuto, setDatosAuto] = useState({ marca: '', modelo: '', anio: '', kilometraje: '' })

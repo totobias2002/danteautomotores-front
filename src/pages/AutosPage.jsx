@@ -18,6 +18,7 @@ import {
 } from '../utils/catalogoParams.js'
 import { ESTADO, TIPO_CARROCERIA, TRANSMISION, ZONA } from '../utils/etiquetas.js'
 import { mensajeDeError } from '../utils/errores.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 const ORDENES = [
   { value: 'relevancia', label: 'Relevancia' },
@@ -123,6 +124,7 @@ function ChipMarcaLogo({ marca, activa, onToggle }) {
 }
 
 export default function AutosPage() {
+  useTitulo('Autos usados')
   const [searchParams, setSearchParams] = useSearchParams()
   // La URL es la ÚNICA fuente de verdad de los filtros, el orden y la página: recargar, compartir el link
   // o apretar "atrás" vuelven exactamente al mismo listado.

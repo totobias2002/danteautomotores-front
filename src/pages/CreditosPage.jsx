@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 import { CREDITOS_FOTOS, LICENCIAS } from '../data/creditosFotos.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 const ENLACE = 'font-semibold text-bronze underline-offset-2 hover:underline'
 
 export default function CreditosPage() {
+  useTitulo('Créditos de imágenes')
   // Se agrupa por auto conservando el orden en que vienen los créditos.
   const grupos = useMemo(() => {
     const porAuto = new Map()

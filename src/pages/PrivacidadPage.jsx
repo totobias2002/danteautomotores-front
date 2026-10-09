@@ -1,9 +1,12 @@
+import useTitulo from '../hooks/useTitulo.js'
+
 // Borrador de la política de privacidad (D-20, Ley 25.326). El texto lo tiene que revisar un profesional antes de
 // publicarse como definitivo; la inscripción de la base ante la AAIP es un pendiente de la agencia, fuera del código.
 const TITULO_SECCION = 'text-lg font-bold text-navy-dark'
 const TEXTO = 'mt-2 text-sm leading-relaxed text-slate-600'
 
 export default function PrivacidadPage() {
+  useTitulo('Política de privacidad')
   return (
     <main className="mx-auto max-w-3xl px-4 py-16">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Tus datos</p>

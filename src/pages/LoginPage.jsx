@@ -5,10 +5,12 @@ import { useAuth } from '../context/AuthContext.jsx'
 import BotonGoogle, { googleDisponible } from '../components/BotonGoogle.jsx'
 import { destinoPostLogin, sanitizarDestino } from '../utils/cuenta.js'
 import { mensajeDeError } from '../utils/errores.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 const BENEFICIOS = ['Guardá autos en tus favoritos', 'Reservá una visita en minutos', 'Seguí tus consultas con las agencias']
 
 export default function LoginPage() {
+  useTitulo('Ingresar')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mostrarPassword, setMostrarPassword] = useState(false)

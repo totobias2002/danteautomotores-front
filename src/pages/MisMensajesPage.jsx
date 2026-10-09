@@ -9,6 +9,7 @@ import { TRANSFORMACION_MINIATURA, urlMiniatura } from '../utils/cloudinary.js'
 import { mensajeDeError } from '../utils/errores.js'
 import { ESTADO } from '../utils/etiquetas.js'
 import { etiquetaTipo, extracto, fechaDeMensaje } from '../utils/mensajes.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 // Cada cuánto se vuelve a pedir la lista (D-07): solo con la pestaña visible y sin WebSockets.
 const INTERVALO_MS = 30000
@@ -65,6 +66,7 @@ function FilaConversacion({ conversacion }) {
 }
 
 export default function MisMensajesPage() {
+  useTitulo('Mis mensajes')
   const { esAdmin } = useAuth()
   const [conversaciones, setConversaciones] = useState([])
   const [cargando, setCargando] = useState(true)

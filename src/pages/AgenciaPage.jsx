@@ -9,6 +9,7 @@ import LogoMarca from '../components/LogoMarca.jsx'
 import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 import { aSearchParams, leerFiltros, paramsParaApi } from '../utils/catalogoParams.js'
 import { mensajeDeError } from '../utils/errores.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 const LISTADO_VACIO = { contenido: [], totalElementos: 0, totalPaginas: 0 }
 
@@ -18,6 +19,7 @@ export default function AgenciaPage() {
   const pagina = useMemo(() => leerFiltros(searchParams).pagina, [searchParams])
 
   const [agencia, setAgencia] = useState(null)
+  useTitulo(agencia ? agencia.nombre : '')
   const [facetas, setFacetas] = useState(null)
   const [listado, setListado] = useState(LISTADO_VACIO)
   const [cargando, setCargando] = useState(true)

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import api from '../services/api.js'
 import { mensajeDeError } from '../utils/errores.js'
 import { etiquetaFaltante, normalizarDni, validarTelefonoBasico } from '../utils/cuenta.js'
+import useTitulo from '../hooks/useTitulo.js'
 
 const CLASE_CAMPO = 'rounded-xl border border-slate-200 px-5 py-3.5 transition focus-within:border-bronze'
 const CLASE_CAMPO_BLOQUEADO = 'rounded-xl border border-slate-200 bg-slate-50 px-5 py-3.5'
@@ -14,6 +15,7 @@ const CLASE_TARJETA = 'rounded-2xl border border-slate-200 bg-white p-6'
 
 // Perfil de la cuenta (AUTH-05). El DNI y el teléfono viven solo en el estado de esta pantalla: nunca en localStorage.
 export default function PerfilPage() {
+  useTitulo('Mi perfil')
   const { guardarSesion, refrescarUsuario } = useAuth()
 
   const [perfil, setPerfil] = useState(null)
