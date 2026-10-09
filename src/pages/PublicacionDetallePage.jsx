@@ -316,7 +316,7 @@ export default function PublicacionDetallePage() {
                   className={`h-full w-full object-cover${vendido ? ' opacity-80' : ''}`}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-slate-500">Sin foto</div>
+                <div className="flex h-full w-full items-center justify-center text-sm text-slate-600">Sin foto</div>
               )}
 
               {badge && (

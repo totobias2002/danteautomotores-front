@@ -101,7 +101,7 @@ export default function HiloDeMensajes({
                     {!propio && etiquetaDelOtro && <p className="text-xs font-bold text-bronze">{etiquetaDelOtro}</p>}
                     {/* Texto de React: se escapa solo, nunca se interpreta como HTML. */}
                     <p className="whitespace-pre-line break-words text-[15px] leading-snug">{m.texto}</p>
-                    <p className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-slate-500">
+                    <p className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-slate-600">
                       {soloHora(m.creadoEn)}
                       {propio &&
                         (m.leido ? (

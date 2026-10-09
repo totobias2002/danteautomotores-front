@@ -147,6 +147,7 @@ export default function AdminMensajesPage() {
 
   return (
     <main className="min-h-screen bg-[#fafaf9] py-10">
+      <h1 className="sr-only">Mensajes de los usuarios</h1>
       <div className="mx-auto max-w-4xl px-4">
         <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 transition hover:text-bronze">
           <ArrowLeft className="h-3.5 w-3.5" /> Volver al panel

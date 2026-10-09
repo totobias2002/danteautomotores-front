@@ -35,7 +35,7 @@ export default function PublicacionCard({ publicacion }) {
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-slate-500">Sin foto</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-slate-600">Sin foto</div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent" />
 

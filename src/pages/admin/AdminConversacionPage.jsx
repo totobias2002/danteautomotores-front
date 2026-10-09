@@ -41,7 +41,7 @@ function EncabezadoDeLaConversacion({ conversacion, onEstadoDelAuto }) {
             {foto ? (
               <img src={foto} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">Sin foto</div>
+              <div className="flex h-full w-full items-center justify-center text-xs text-slate-600">Sin foto</div>
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -234,6 +234,7 @@ export default function AdminConversacionPage() {
 
   return (
     <main className="min-h-screen bg-[#fafaf9] px-6 py-10">
+      <h1 className="sr-only">Conversación con el usuario</h1>
       <div className="mx-auto max-w-6xl">
         <Link
           to="/admin/mensajes"
