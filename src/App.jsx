@@ -17,7 +17,8 @@ function App() {
       </div>
       <Footer />
       <BotonFlotanteWhatsapp />
-      <DevCambioDeCuenta /> {/* TEMPORAL: borrar */}
+      {/* TEMPORAL: borrar. Solo en desarrollo: en producción los clientes no deben ver este atajo. */}
+      {import.meta.env.DEV && <DevCambioDeCuenta />}
     </div>
   )
 }

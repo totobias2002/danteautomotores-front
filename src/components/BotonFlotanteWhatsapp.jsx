@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom'
 import { armarLinkWhatsapp } from '../utils/whatsapp.js'
 
 function IconoWhatsapp({ className }) {
@@ -8,7 +9,13 @@ function IconoWhatsapp({ className }) {
   )
 }
 
+// En el chat y en el panel del admin el botón taparía el de enviar y las acciones: ahí no se muestra.
+const RUTAS_SIN_BOTON = ['/mensajes', '/admin']
+
 export default function BotonFlotanteWhatsapp({ mensaje = 'Hola, quería consultar por un auto.', numero }) {
+  const { pathname } = useLocation()
+  if (RUTAS_SIN_BOTON.some((ruta) => pathname === ruta || pathname.startsWith(`${ruta}/`))) return null
+
   return (
     <a
       href={armarLinkWhatsapp(mensaje, numero)}
@@ -16,10 +23,10 @@ export default function BotonFlotanteWhatsapp({ mensaje = 'Hola, quería consult
       rel="noopener noreferrer"
       aria-label="Escribinos por WhatsApp"
       title="Escribinos por WhatsApp"
-      className="fixed bottom-5 right-5 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-black/30 transition hover:scale-110 hover:shadow-2xl"
+      className="fixed bottom-4 right-4 z-50 flex h-14 w-14 sm:bottom-5 sm:right-5 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-black/30 transition hover:scale-110 hover:shadow-2xl"
     >
       <span className="absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-30" aria-hidden="true" />
-      <IconoWhatsapp className="relative h-9 w-9" />
+      <IconoWhatsapp className="relative h-8 w-8 sm:h-9 sm:w-9" />
     </a>
   )
 }

@@ -76,7 +76,7 @@ export default function HiloDeMensajes({
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* Alto ajustado a la pantalla: el hilo scrollea por dentro y el cuadro para escribir siempre se ve. */}
-      <div ref={contenedorDelHilo} className="h-[calc(100vh-33rem)] min-h-40 overflow-y-auto bg-[#ebebeb] px-3 py-4 sm:px-5">
+      <div ref={contenedorDelHilo} className="h-[calc(100dvh-26rem)] min-h-64 overflow-y-auto sm:h-[calc(100dvh-33rem)] sm:min-h-40 bg-[#ebebeb] px-3 py-4 sm:px-5">
         <ul className="flex flex-col gap-1.5" aria-live="polite">
           {mensajes.map((m) => {
             const propio = m.autor === miAutor
