@@ -304,10 +304,10 @@ export default function PublicacionDetallePage() {
           )}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr] lg:gap-10">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.35fr_1fr] lg:gap-10">
           {/* Galería y contenido principal. En el celular el precio y "Lo quiero" suben justo debajo de la galería. */}
-          <div className="contents lg:block">
-            <div className="order-1 lg:order-none">
+          <div className="contents lg:block lg:min-w-0">
+            <div className="order-1 min-w-0 lg:order-none">
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#d7d9d7] sm:aspect-video">
               {fotoPrincipal ? (
                 <img
@@ -377,7 +377,7 @@ export default function PublicacionDetallePage() {
 
             </div>
 
-            <div className="order-3 lg:order-none">
+            <div className="order-3 min-w-0 lg:order-none">
             {/* Ficha técnica */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:mt-10">
               <h2 className="mb-5 text-lg font-bold text-navy-dark">Ficha técnica</h2>
@@ -482,7 +482,7 @@ export default function PublicacionDetallePage() {
           </div>
 
           {/* Panel lateral: precio y acciones */}
-          <div className="order-2 lg:sticky lg:top-24 lg:order-none lg:self-start">
+          <div className="order-2 min-w-0 lg:sticky lg:top-24 lg:order-none lg:self-start">
             {vendido && (
               <div role="status" className="mb-5 rounded-2xl border border-slate-300 bg-slate-100 p-5">
                 <p className="flex items-center gap-2 text-base font-bold text-navy-dark">

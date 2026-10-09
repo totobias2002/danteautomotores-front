@@ -138,7 +138,7 @@ export default function RegistroPage() {
         <div className="flex min-h-[640px] items-center justify-center px-6 py-16 lg:px-10 xl:px-16">
           <div className="w-full max-w-lg">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-bronze">Crear cuenta</p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-navy-dark">Sumate a DanteAutomotores</h1>
+            <h1 className="mt-2 break-words text-3xl font-bold tracking-tight text-navy-dark sm:text-4xl">Sumate a DanteAutomotores</h1>
             <p className="mt-2 text-base text-slate-500">Creá tu cuenta gratis para guardar autos y reservar visitas.</p>
 
             <form onSubmit={handleSubmit} noValidate className="mt-8 flex flex-col gap-4">

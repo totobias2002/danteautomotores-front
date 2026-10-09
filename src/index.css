@@ -27,6 +27,8 @@
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    /* Una palabra más ancha que la pantalla se parte en vez de ensanchar la página. */
+    overflow-wrap: break-word;
   }
 }
 
