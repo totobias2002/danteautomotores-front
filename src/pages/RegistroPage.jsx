@@ -26,7 +26,7 @@ function PieDeCampo({ id, ayuda, error }) {
     )
   }
   return (
-    <p id={id} className="mt-1.5 px-1 text-sm text-slate-400">
+    <p id={id} className="mt-1.5 px-1 text-sm text-slate-500">
       {ayuda}
     </p>
   )
@@ -146,6 +146,7 @@ export default function RegistroPage() {
                   <User className="h-5 w-5 shrink-0 text-slate-400" />
                   <input
                     type="text"
+                    aria-label="Nombre"
                     placeholder="Nombre"
                     autoComplete="given-name"
                     value={nombre}
@@ -158,6 +159,7 @@ export default function RegistroPage() {
                   <User className="h-5 w-5 shrink-0 text-slate-400" />
                   <input
                     type="text"
+                    aria-label="Apellido"
                     placeholder="Apellido"
                     autoComplete="family-name"
                     value={apellido}
@@ -172,6 +174,7 @@ export default function RegistroPage() {
                 <Mail className="h-5 w-5 shrink-0 text-slate-400" />
                 <input
                   type="email"
+                  aria-label="Email"
                   placeholder="Email"
                   autoComplete="email"
                   value={email}
@@ -186,6 +189,7 @@ export default function RegistroPage() {
                   <Phone className="h-5 w-5 shrink-0 text-slate-400" />
                   <input
                     type="tel"
+                    aria-label="Teléfono"
                     placeholder="Teléfono"
                     autoComplete="tel"
                     inputMode="tel"
@@ -205,6 +209,7 @@ export default function RegistroPage() {
                   <IdCard className="h-5 w-5 shrink-0 text-slate-400" />
                   <input
                     type="text"
+                    aria-label="DNI"
                     placeholder="DNI"
                     autoComplete="off"
                     inputMode="numeric"
@@ -224,6 +229,7 @@ export default function RegistroPage() {
                   <Lock className="h-5 w-5 shrink-0 text-slate-400" />
                   <input
                     type={mostrarPassword ? 'text' : 'password'}
+                    aria-label="Contraseña"
                     placeholder="Contraseña"
                     autoComplete="new-password"
                     value={password}
@@ -266,7 +272,7 @@ export default function RegistroPage() {
 
             {googleDisponible && (
               <>
-                <div className="my-7 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
+                <div className="my-7 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
                   <span className="h-px flex-1 bg-slate-200" /> o continuá con <span className="h-px flex-1 bg-slate-200" />
                 </div>
 
@@ -281,7 +287,7 @@ export default function RegistroPage() {
               </Link>
             </p>
 
-            <p className="mt-6 text-center text-xs leading-relaxed text-slate-400">
+            <p className="mt-6 text-center text-xs leading-relaxed text-slate-500">
               Al crear tu cuenta, aceptás nuestros Términos y Condiciones y nuestra{' '}
               <Link to="/privacidad" className="underline hover:text-bronze">
                 Política de Privacidad

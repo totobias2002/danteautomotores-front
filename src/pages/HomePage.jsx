@@ -121,7 +121,7 @@ export default function HomePage() {
               <div className="relative flex min-w-[220px] flex-1 items-center gap-3 rounded-xl px-3 py-2">
                 <Search className="h-4 w-4 text-bronze" />
                 <div className="w-full">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">¿Qué buscás?</label>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">¿Qué buscás?</label>
                   <input
                     placeholder="Marca o modelo"
                     value={filtros.marca}
@@ -158,7 +158,7 @@ export default function HomePage() {
               </button>
             </form>
 
-            <div className="mt-6 flex items-center gap-5 text-xs text-slate-400">
+            <div className="mt-6 flex items-center gap-5 text-xs text-slate-500">
               <span className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-bronze" /> 100% verificados
               </span>
@@ -168,7 +168,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-8 max-w-xl">
-              <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por marca</p>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-500">Buscá por marca</p>
               <div className="flex flex-wrap gap-2">
                 {MARCAS_ACCESO_RAPIDO.map((marca) => (
                   <Link
@@ -185,7 +185,7 @@ export default function HomePage() {
                         className="max-h-6 max-w-[85%] object-contain grayscale-[25%] opacity-80 transition hover:grayscale-0 hover:opacity-100"
                       />
                     ) : (
-                      <span className="text-[10px] font-bold text-bronze">{marca}</span>
+                      <span className="text-[11px] font-bold text-bronze">{marca}</span>
                     )}
                   </Link>
                 ))}
@@ -200,7 +200,7 @@ export default function HomePage() {
               {/* Mientras llegan las facetas se reserva el lugar con placeholders, así el hero no se corre. */}
               {(!facetas && !facetasFallaron) && (
                 <>
-                  <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por presupuesto</p>
+                  <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-500">Buscá por presupuesto</p>
                   <div className="flex flex-wrap gap-2" aria-hidden="true">
                     {[0, 1, 2, 3].map((i) => (
                       <span key={i} className="h-[34px] w-40 animate-pulse rounded-full border border-slate-200 bg-white/60" />
@@ -210,7 +210,7 @@ export default function HomePage() {
               )}
               {bandas.length > 1 && (
                 <>
-                  <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-400">Buscá por presupuesto</p>
+                  <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wider text-slate-500">Buscá por presupuesto</p>
                   <div className="flex flex-wrap gap-2">
                     {bandas.map((banda, i) => (
                       <Link
@@ -256,7 +256,7 @@ export default function HomePage() {
 
       {/* Marquee de marcas */}
       <section className="overflow-hidden border-t border-slate-200 bg-white py-6">
-        <div className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+        <div className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
           Marcas que encontrás en DanteAutomotores
         </div>
         <div className="flex w-max animate-marquee gap-14 px-8 hover:[animation-play-state:paused]">

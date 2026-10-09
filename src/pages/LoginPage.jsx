@@ -152,7 +152,7 @@ export default function LoginPage() {
 
             {googleDisponible && (
               <>
-                <div className="my-7 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
+                <div className="my-7 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
                   <span className="h-px flex-1 bg-slate-200" /> o continuá con <span className="h-px flex-1 bg-slate-200" />
                 </div>
 
@@ -167,7 +167,7 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            <p className="mt-6 text-center text-xs leading-relaxed text-slate-400">
+            <p className="mt-6 text-center text-xs leading-relaxed text-slate-500">
               Al continuar, aceptás nuestros Términos y Condiciones y nuestra{' '}
               <Link to="/privacidad" className="underline hover:text-bronze">
                 Política de Privacidad

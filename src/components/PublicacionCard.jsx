@@ -23,7 +23,7 @@ export default function PublicacionCard({ publicacion }) {
   ].filter(Boolean)
 
   return (
-    <article className={`group overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-500 hover:-translate-y-1.5 hover:border-bronze/30 hover:shadow-2xl hover:shadow-navy/10${vendido ? ' opacity-75' : ''}`}>
+    <article className={`group overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-500 hover:-translate-y-1.5 hover:border-bronze/30 hover:shadow-2xl hover:shadow-navy/10${vendido ? ' saturate-50' : ''}`}>
       <div className="relative h-52 overflow-hidden bg-[#d7d9d7]">
         {foto ? (
           <img

@@ -6,7 +6,7 @@ export default function Logo({ variant = 'dark' }) {
         <span className="font-heading text-xl font-bold italic">D</span>
       </div>
       <span className={`font-heading text-lg font-bold tracking-tight sm:text-xl ${textClass}`}>
-        Dante<span className="text-bronze">Automotores</span>
+        Dante<span className={variant === 'light' ? 'text-bronze-light' : 'text-bronze'}>Automotores</span>
       </span>
     </div>
   )

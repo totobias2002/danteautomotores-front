@@ -17,6 +17,7 @@ export default function BotonFlotanteWhatsapp({ mensaje = 'Hola, quería consult
   if (RUTAS_SIN_BOTON.some((ruta) => pathname === ruta || pathname.startsWith(`${ruta}/`))) return null
 
   return (
+    <aside aria-label="Contacto por WhatsApp">
     <a
       href={armarLinkWhatsapp(mensaje, numero)}
       target="_blank"
@@ -28,5 +29,6 @@ export default function BotonFlotanteWhatsapp({ mensaje = 'Hola, quería consult
       <span className="absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-30" aria-hidden="true" />
       <IconoWhatsapp className="relative h-8 w-8 sm:h-9 sm:w-9" />
     </a>
+    </aside>
   )
 }

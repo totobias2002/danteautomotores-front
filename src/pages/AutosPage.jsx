@@ -310,7 +310,7 @@ export default function AutosPage() {
   return (
     <main className="min-h-screen bg-[#fafaf9]">
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Autos usados</p>
+        <h1 className="mb-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Autos usados</h1>
 
         <div className="mb-8 flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-5 py-4 shadow-sm shadow-navy/5">
           <Search className="h-5 w-5 shrink-0 text-bronze" />

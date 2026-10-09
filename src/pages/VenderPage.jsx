@@ -200,7 +200,7 @@ export default function VenderPage() {
                 >
                   {paso > p.numero ? <Check className="h-4 w-4" /> : p.numero}
                 </div>
-                <span className={`hidden text-xs font-bold sm:block ${paso >= p.numero ? 'text-navy-dark' : 'text-slate-400'}`}>
+                <span className={`hidden text-xs font-bold sm:block ${paso >= p.numero ? 'text-navy-dark' : 'text-slate-500'}`}>
                   {p.titulo}
                 </span>
                 {i < PASOS.length - 1 && <div className={`h-0.5 flex-1 rounded ${paso > p.numero ? 'bg-bronze' : 'bg-slate-200'}`} />}
@@ -293,11 +293,11 @@ export default function VenderPage() {
                     onChange={(e) => setDatosAuto({ ...datosAuto, kilometraje: acotarKm(e.target.value) })}
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-sm font-semibold text-navy outline-none transition focus:border-bronze"
                   />
-                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500">
                     km
                   </span>
                 </div>
-                <span className="mt-1 text-[11px] text-slate-400">Hasta {KM_MAXIMO.toLocaleString('es-AR')} km</span>
+                <span className="mt-1 text-[11px] text-slate-500">Hasta {KM_MAXIMO.toLocaleString('es-AR')} km</span>
               </Campo>
             </div>
 
@@ -318,14 +318,14 @@ export default function VenderPage() {
               <Car className="h-4 w-4 text-bronze" />
               {datosAuto.marca} {datosAuto.modelo} {datosAuto.anio}
               {datosAuto.kilometraje && (
-                <span className="flex items-center gap-1 font-normal text-slate-400">
+                <span className="flex items-center gap-1 font-normal text-slate-500">
                   <Gauge className="h-3.5 w-3.5" /> {formatearNumero(datosAuto.kilometraje)} km
                 </span>
               )}
             </div>
 
             <div className="mt-5 rounded-2xl bg-cream p-6 text-center">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Cotización estimada</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Cotización estimada</p>
               <p className="mt-1 font-heading text-3xl text-navy-dark">
                 $ {estimacion.min.toLocaleString('es-AR')} — $ {estimacion.max.toLocaleString('es-AR')}
               </p>
