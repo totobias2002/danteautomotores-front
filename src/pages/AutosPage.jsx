@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react'
 import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
+import PublicacionCardEsqueleto from '../components/PublicacionCardEsqueleto.jsx'
 import FiltroAcordeon from '../components/FiltroAcordeon.jsx'
 import Paginador from '../components/Paginador.jsx'
 import { LOGOS } from '../components/LogoMarca.jsx'
@@ -624,6 +625,14 @@ export default function AutosPage() {
               ) : (
                 <p className="text-slate-500">Todavía no hay autos publicados.</p>
               ))}
+
+            {listado === null && cargando && !error && (
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <PublicacionCardEsqueleto key={i} />
+                ))}
+              </div>
+            )}
 
             {listado !== null && listado.contenido.length > 0 && (
               <div
