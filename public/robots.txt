@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /mensajes
+Disallow: /perfil
+Disallow: /favoritos
+Disallow: /completar-datos
+Disallow: /restablecer-contrasena
+Disallow: /confirmar-email
