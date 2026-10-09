@@ -14,7 +14,14 @@
 }
 
 @layer base {
+  html {
+    /* iPhone: no reescala el texto al girar el celular. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   body {
+    /* Red de seguridad: nada puede ensanchar la página y generar scroll horizontal en el celular. */
+    overflow-x: clip;
     font-family: var(--font-sans);
     background: var(--color-cream);
   }
@@ -86,5 +93,15 @@
     border: 2px solid var(--color-bronze);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     cursor: pointer;
+  }
+}
+
+/* iPhone: Safari hace zoom solo al enfocar un campo con letra menor a 16px y deja la página agrandada.
+   Va fuera de @layer a propósito: así gana contra las clases text-sm / text-xs de Tailwind. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px;
   }
 }

@@ -23,7 +23,7 @@ export default function BotonFlotanteWhatsapp({ mensaje = 'Hola, quería consult
       rel="noopener noreferrer"
       aria-label="Escribinos por WhatsApp"
       title="Escribinos por WhatsApp"
-      className="fixed bottom-4 right-4 z-50 flex h-14 w-14 sm:bottom-5 sm:right-5 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-black/30 transition hover:scale-110 hover:shadow-2xl"
+      className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-50 flex h-14 w-14 sm:bottom-5 sm:right-5 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-black/30 transition hover:scale-110 hover:shadow-2xl"
     >
       <span className="absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-30" aria-hidden="true" />
       <IconoWhatsapp className="relative h-8 w-8 sm:h-9 sm:w-9" />
