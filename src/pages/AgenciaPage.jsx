@@ -159,7 +159,7 @@ export default function AgenciaPage() {
       {/* Marquee de marcas */}
       {marcas.length > 0 && (
         <section className="overflow-hidden border-t border-slate-200 bg-white py-6">
-          <div className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          <div className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
             Marcas disponibles en {agencia.nombre}
           </div>
           <div className="flex w-max animate-marquee gap-14 px-8 hover:[animation-play-state:paused]">
