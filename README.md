@@ -16,13 +16,23 @@ src/
 │                # BadgeNoLeidos, etc.)
 ├── context/     # AuthContext (usuario logueado, token JWT) y NoLeidosContext
 │                # (contador de mensajes sin leer, con consulta periódica)
-├── hooks/       # useSondeo (consulta periódica con la pestaña visible), useExigirCuenta
+├── hooks/       # useSondeo (consulta periódica con la pestaña visible), useExigirCuenta,
+│                # useTitulo (título de la pestaña por pantalla)
 ├── utils/       # Reglas puras, con tests de node --test
 ├── services/    # Cliente de API (axios)
 └── routes/      # Definición de rutas
 ```
 
-Pruebas: `npm test` (tests de las reglas puras de `utils` con `node --test`) y `npm run build`.
+Pruebas: `npm test` (tests de las reglas puras de `utils` con `node --test`, necesita Node 21 o superior), `npm run lint` (ESLint) y `npm run build`. Los tres corren solos en GitHub Actions (`.github/workflows/ci.yml`) en cada push y pull request.
+
+## Pantallas para celular
+
+El sitio está pensado primero para celular (probado en 320, 360, 393, 430 y 768 px):
+
+- El menú de tres rayitas reemplaza al menú de escritorio hasta 1024 px (`Navbar`).
+- Los campos de formulario tienen 16 px en pantallas chicas: en iPhone, Safari hace zoom al enfocar un campo con letra menor (regla al final de `src/index.css`).
+- Las pantallas de uso poco frecuente (cuenta, mensajes, admin) se cargan bajo demanda (`routes/AppRouter.jsx`).
+- Una grilla de una sola columna lleva `grid-cols-1`: sin eso el contenido largo la estira y la página se desborda en el celular.
 
 ## Cómo levantar el entorno de desarrollo
 
@@ -31,3 +41,5 @@ Pruebas: `npm test` (tests de las reglas puras de `utils` con `node --test`) y `
 3. `npm run dev`
 
 Necesita el backend (`danteautomotores-back`) corriendo en paralelo.
+
+Para probar contra un backend local sin tocar el `.env`: `VITE_API_URL=http://localhost:8080/api npm run dev` (la variable del shell le gana al `.env`).
