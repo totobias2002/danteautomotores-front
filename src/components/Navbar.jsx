@@ -24,7 +24,7 @@ export default function Navbar() {
   return (
     <header className="bg-cream sticky top-0 z-40 border-b border-black/5">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-5 lg:px-10" aria-label="Navegación principal">
-        <Link to="/">
+        <Link to="/" className="min-w-0">
           <Logo />
         </Link>
 
@@ -40,7 +40,7 @@ export default function Navbar() {
           {esAdmin && <Link to="/admin" className="transition hover:text-bronze">Administración</Link>}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-4">
           <Link
             to="/favoritos"
             aria-label="Favoritos"
@@ -107,7 +107,7 @@ export default function Navbar() {
             aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={menuAbierto}
             aria-controls="menu-movil"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-navy-dark/80 transition hover:bg-bronze/10 hover:text-bronze lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-navy-dark/80 transition hover:bg-bronze/10 hover:text-bronze lg:hidden"
           >
             {menuAbierto ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>

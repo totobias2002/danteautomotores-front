@@ -18,6 +18,8 @@
     /* iPhone: no reescala el texto al girar el celular. */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Safari del iPhone ignora el clip del body: sin esto la página se puede arrastrar para los costados. */
+    overflow-x: clip;
   }
   body {
     /* Red de seguridad: nada puede ensanchar la página y generar scroll horizontal en el celular. */

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Check, Search, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Pause, Play, Search, Sparkles } from 'lucide-react'
 import api from '../services/api.js'
 import PublicacionCard from '../components/PublicacionCard.jsx'
 import SeccionConfianza from '../components/SeccionConfianza.jsx'
@@ -32,6 +32,8 @@ export default function HomePage() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false)
+  const videoRef = useRef(null)
+  const [videoPausado, setVideoPausado] = useState(false)
 
   // Para el autocompletado del buscador del hero: las marcas del catálogo real más cada combinación
   // "marca modelo", para que sugiera tanto si escribís una marca como si escribís (parte de) un modelo puntual.
@@ -93,6 +95,19 @@ export default function HomePage() {
     navigate(texto ? `/autos?busqueda=${encodeURIComponent(texto)}` : '/autos')
   }
 
+  // El video arranca solo y en bucle: se puede pausar (accesibilidad y ahorro de batería en el celular).
+  const alternarVideo = () => {
+    const video = videoRef.current
+    if (!video) return
+    if (video.paused) {
+      video.play().catch(() => {})
+      setVideoPausado(false)
+    } else {
+      video.pause()
+      setVideoPausado(true)
+    }
+  }
+
   const elegirSugerencia = (sugerencia) => {
     setFiltros({ marca: sugerencia })
     setSugerenciasAbiertas(false)
@@ -102,7 +117,7 @@ export default function HomePage() {
     <main className="min-h-screen overflow-hidden bg-[#fafaf9]">
       {/* Hero */}
       <section className="bg-cream">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-6 pb-16 pt-10 md:grid-cols-[1fr_1.1fr] md:pb-24 md:pt-14 lg:px-10">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-6 pb-16 md:grid-cols-[1fr_1.1fr] md:pb-24 md:pt-14 lg:px-10">
           <div className="animate-fade-in-up [animation-delay:100ms]">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-bronze/20 bg-bronze/5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-bronze">
               <Sparkles className="h-3.5 w-3.5" /> El marketplace de confianza
@@ -227,23 +242,33 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-2xl animate-fade-in-up [animation-delay:250ms]">
-            <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full border border-bronze/20" />
-            <div className="absolute -bottom-5 -left-5 h-20 w-20 rounded-full bg-bronze/10" />
-            <div className="relative overflow-hidden rounded-[2rem] rounded-br-[5rem] bg-navy shadow-2xl shadow-navy/20">
+          {/* En el celular el video va primero y a todo el ancho; desde md vuelve a la columna derecha. */}
+          <div className="relative order-first -mx-6 w-auto animate-fade-in-up md:order-none md:mx-auto md:w-full md:max-w-2xl [animation-delay:250ms]">
+            <div className="absolute -right-6 -top-6 hidden h-28 w-28 rounded-full border border-bronze/20 md:block" />
+            <div className="absolute -bottom-5 -left-5 hidden h-20 w-20 rounded-full bg-bronze/10 md:block" />
+            <div className="relative overflow-hidden rounded-b-[2.5rem] rounded-br-[4.5rem] bg-navy shadow-2xl shadow-navy/20 md:rounded-[2rem] md:rounded-br-[5rem]">
               <video
+                ref={videoRef}
                 autoPlay
                 loop
                 muted
                 playsInline
                 poster="/images/hero-car-poster.jpg"
                 aria-label="Video de un auto premium en un garage con iluminación moderna"
-                className="h-[310px] w-full object-cover md:h-[430px]"
+                className="h-[min(62svh,460px)] min-h-[300px] w-full object-cover md:h-[430px] md:min-h-0"
               >
                 <source src="/videos/hero-car.mp4" type="video/mp4" />
               </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-7 text-white">
+              <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-transparent to-navy/20 md:from-navy/60 md:to-transparent" />
+              <button
+                type="button"
+                onClick={alternarVideo}
+                aria-label={videoPausado ? 'Reproducir video' : 'Pausar video'}
+                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-navy/50 text-white backdrop-blur transition hover:bg-bronze md:bottom-6 md:right-7 md:top-auto"
+              >
+                {videoPausado ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+              </button>
+              <div className="absolute bottom-7 left-6 text-white md:bottom-6 md:left-7">
                 <p className="text-xs uppercase tracking-[0.18em] text-bronze-light">Curaduría DanteAutomotores</p>
                 <p className="mt-1 font-heading text-2xl">Elegí con confianza.</p>
               </div>
