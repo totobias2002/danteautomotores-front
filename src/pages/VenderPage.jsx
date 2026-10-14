@@ -190,23 +190,27 @@ export default function VenderPage() {
 
       <div className="mx-auto max-w-3xl px-6 py-10 lg:px-10">
         {paso < 4 && (
-          <div className="mb-8 flex items-center gap-2">
+          <ol className="mx-auto mb-8 flex max-w-sm items-start justify-center" aria-label="Pasos para vender tu auto">
             {PASOS.map((p, i) => (
-              <div key={p.numero} className="flex flex-1 items-center gap-2">
-                <div
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
-                    paso >= p.numero ? 'bg-bronze text-white' : 'bg-slate-200 text-slate-500'
-                  }`}
-                >
-                  {paso > p.numero ? <Check className="h-4 w-4" /> : p.numero}
+              <li key={p.numero} className="contents">
+                <div className="flex w-20 shrink-0 flex-col items-center gap-1.5" aria-current={paso === p.numero ? 'step' : undefined}>
+                  <div
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                      paso >= p.numero ? 'bg-bronze text-white' : 'bg-slate-200 text-slate-500'
+                    }`}
+                  >
+                    {paso > p.numero ? <Check className="h-4 w-4" /> : p.numero}
+                  </div>
+                  <span className={`text-center text-xs font-bold ${paso >= p.numero ? 'text-navy-dark' : 'text-slate-500'}`}>
+                    {p.titulo}
+                  </span>
                 </div>
-                <span className={`hidden text-xs font-bold sm:block ${paso >= p.numero ? 'text-navy-dark' : 'text-slate-500'}`}>
-                  {p.titulo}
-                </span>
-                {i < PASOS.length - 1 && <div className={`h-0.5 flex-1 rounded ${paso > p.numero ? 'bg-bronze' : 'bg-slate-200'}`} />}
-              </div>
+                {i < PASOS.length - 1 && (
+                  <div className={`mt-[15px] h-0.5 min-w-4 flex-1 rounded ${paso > p.numero ? 'bg-bronze' : 'bg-slate-200'}`} aria-hidden="true" />
+                )}
+              </li>
             ))}
-          </div>
+          </ol>
         )}
 
         {paso === 1 && (
