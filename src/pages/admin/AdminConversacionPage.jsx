@@ -63,7 +63,7 @@ function EncabezadoDeLaConversacion({ conversacion, onEstadoDelAuto }) {
       )}
 
       {publicacion && (
-        <div className="mt-3">
+        <div className="mt-3 flex justify-center lg:justify-start">
           <SelectorDeEstado
             publicacionId={publicacion.id}
             estado={publicacion.estado}
@@ -72,7 +72,7 @@ function EncabezadoDeLaConversacion({ conversacion, onEstadoDelAuto }) {
         </div>
       )}
 
-      <div className={`${publicacion ? 'mt-3 ' : ''}flex flex-wrap items-center gap-1.5`}>
+      <div className={`${publicacion ? 'mt-3 ' : ''}flex flex-wrap items-center justify-center gap-1.5 lg:justify-start`}>
         <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
           {etiquetaTipo(conversacion.tipo)}
         </span>
@@ -109,7 +109,7 @@ function PanelDelUsuario({ usuarioId, usuario }) {
   const cantidad = Array.isArray(ficha?.conversaciones) ? ficha.conversaciones.length : null
 
   return (
-    <aside className="rounded-2xl border border-slate-200 bg-white p-5 lg:sticky lg:top-24">
+    <aside className="rounded-2xl border border-slate-200 bg-white p-5 max-lg:text-center lg:sticky lg:top-24">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Perfil del usuario</p>
       <h2 className="mt-1 text-lg font-bold text-navy-dark">{nombreDelUsuario(ficha ?? usuario)}</h2>
       <div className="mt-4">
@@ -236,13 +236,15 @@ export default function AdminConversacionPage() {
     <main className="min-h-screen bg-[#fafaf9] px-6 py-10">
       <h1 className="sr-only">Conversación con el usuario</h1>
       <div className="mx-auto max-w-6xl">
-        <Link
-          to="/admin/mensajes"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-bronze"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver a la bandeja
-        </Link>
+        <div className="max-lg:text-center">
+          <Link
+            to="/admin/mensajes"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-bronze"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver a la bandeja
+          </Link>
+        </div>
 
         {cargando ? (
           <p className="mt-10 text-center text-slate-500">Cargando...</p>
@@ -276,7 +278,7 @@ export default function AdminConversacionPage() {
               }
             />
 
-            <div className="mt-3 flex flex-wrap items-center justify-end gap-3">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-3 lg:justify-end">
               {errorDeEstado && (
                 <p role="alert" className="text-sm font-semibold text-red-600">{errorDeEstado}</p>
               )}

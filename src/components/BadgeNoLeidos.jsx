@@ -10,7 +10,7 @@ export default function BadgeNoLeidos({ cantidad, className = '' }) {
   return (
     <span
       aria-label={`${n} ${n === 1 ? 'mensaje sin leer' : 'mensajes sin leer'}`}
-      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-bronze px-1.5 text-[11px] font-bold leading-none text-white ${className}`}
+      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-bronze px-1.5 pb-0.5 text-[11px] font-bold leading-none text-white ${className}`}
     >
       {texto}
     </span>
