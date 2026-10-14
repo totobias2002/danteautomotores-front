@@ -109,7 +109,7 @@ function PanelDelUsuario({ usuarioId, usuario }) {
   const cantidad = Array.isArray(ficha?.conversaciones) ? ficha.conversaciones.length : null
 
   return (
-    <aside className="rounded-2xl border border-slate-200 bg-white p-5 max-lg:text-center lg:sticky lg:top-24">
+    <aside className="rounded-2xl border border-slate-200 bg-white p-5 lg:sticky lg:top-24">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-bronze">Perfil del usuario</p>
       <h2 className="mt-1 text-lg font-bold text-navy-dark">{nombreDelUsuario(ficha ?? usuario)}</h2>
       <div className="mt-4">
@@ -267,10 +267,10 @@ export default function AdminConversacionPage() {
             </button>
           </div>
         ) : (
-          <div className="mt-4 grid items-start gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
+          <div className="mt-4 grid grid-cols-1 items-start gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
             <PanelDelUsuario usuarioId={conversacion.usuario?.id} usuario={conversacion.usuario} />
 
-            <div>
+            <div className="min-w-0">
             <EncabezadoDeLaConversacion
               conversacion={conversacion}
               onEstadoDelAuto={(estado) =>
