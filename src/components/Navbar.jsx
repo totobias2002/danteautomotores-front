@@ -31,12 +31,6 @@ export default function Navbar() {
         <div className="hidden flex-1 items-center justify-center gap-7 text-sm font-bold text-navy-dark/80 lg:flex">
           <Link to="/autos" className="transition hover:text-bronze">Comprar tu auto</Link>
           <Link to="/vender" className="transition hover:text-bronze">Vender tu auto</Link>
-          {esComprador && (
-            <Link to="/mensajes" className="inline-flex items-center gap-1.5 transition hover:text-bronze">
-              Mis mensajes
-              <BadgeNoLeidos cantidad={noLeidos} />
-            </Link>
-          )}
           {esAdmin && <Link to="/admin" className="transition hover:text-bronze">Administración</Link>}
         </div>
 
@@ -119,12 +113,6 @@ export default function Navbar() {
           <Link to="/autos" className={itemMenu}>Comprar tu auto</Link>
           <Link to="/vender" className={itemMenu}>Vender tu auto</Link>
           <Link to="/creditos" className={itemMenu}>Financiación</Link>
-          {esComprador && (
-            <Link to="/mensajes" className={itemMenu}>
-              Mis mensajes
-              <BadgeNoLeidos cantidad={noLeidos} />
-            </Link>
-          )}
           {esAdmin && <Link to="/admin" className={itemMenu}>Administración</Link>}
           <div className="mt-3 flex flex-col gap-2 border-t border-black/5 pt-4">
             {usuario ? (
